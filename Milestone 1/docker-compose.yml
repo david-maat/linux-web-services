@@ -1,0 +1,25 @@
+  
+services:
+  apache:
+    build:
+      context: ./webserver
+      dockerfile: Dockerfile
+    depends_on:
+      - mysql
+    ports:
+      - 8080:80
+    container_name: contapa2-m1-dm
+  mysql:
+    image: mysql:lts@sha256:5367102acfefeaa47eb0eb57c8d4f8b96c8c14004859131eac9bbfaa62f81e34
+    container_name: contsql-m1-dm
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: appdb
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: secret
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
