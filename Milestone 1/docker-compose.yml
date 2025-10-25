@@ -10,6 +10,7 @@ services:
     volumes:
       - certs:/etc/haproxy/certs:ro
       - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+      - ./haproxy/crt-list.txt:/etc/haproxy/certs/crt-list.txt:ro
     depends_on:
       contapa2-m1-dm:
         condition: service_healthy

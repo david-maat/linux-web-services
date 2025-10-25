@@ -1,0 +1,1 @@
+/etc/haproxy/certs/certificates/${DOMAIN}.crt optional
