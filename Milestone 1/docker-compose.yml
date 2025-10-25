@@ -97,6 +97,29 @@ services:
       - --accept-tos
       - run
 
+  lego-renew:
+    image: goacme/lego:latest
+    container_name: lego-renew-m1-dm
+    profiles:
+      - renew
+    volumes:
+      - certs:/etc/lego
+    environment:
+      - EMAIL=${EMAIL}
+      - DOMAIN=${DOMAIN}
+      - ACME_SERVER=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory}
+    command: 
+      - --email=${EMAIL}
+      - --domains=${DOMAIN}
+      - --http
+      - --http.port=:80
+      - --path=/etc/lego
+      - --server=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory}
+      - --accept-tos
+      - renew
+      - --days
+      - "30"
+
   lego-renew-cron:
     build:
       context: ./cron
@@ -108,6 +131,7 @@ services:
       - ACME_SERVER=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./docker-compose.yml:/docker-compose.yml:ro
 
 volumes:
   db_data:
