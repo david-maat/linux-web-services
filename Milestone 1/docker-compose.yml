@@ -3,8 +3,8 @@ services:
     image: haproxy:3.0-alpine
     container_name: haproxy-m1-dm
     ports:
-      - 8085:80
-      - 8443:443
+      - 80:80
+      - 443:443
     volumes:
       - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
       - certs:/etc/haproxy/certs:ro
