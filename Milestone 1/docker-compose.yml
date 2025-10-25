@@ -74,7 +74,7 @@ services:
         condition: service_healthy
 
   lego:
-    image: docker:28.5.1-alpine3.22
+    image: docker:28.5.1-dind-alpine3.22
     container_name: lego-acme-m1-dm
     privileged: true
     restart: always
@@ -82,16 +82,24 @@ services:
       - DOMAIN=${DOMAIN}
       - EMAIL=${EMAIL}
       - ACME_SERVER=${ACME_SERVER}
+      - DOCKER_TLS_CERTDIR=/certs
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
       - certs:/etc/lego/certificates
       - acme_challenge:/var/www/html/.well-known/acme-challenge
       - ./lego/renew.sh:/etc/periodic/daily/renew-certs:ro
       - ./lego/entrypoint.sh:/entrypoint.sh
+      - docker-certs:/certs
     entrypoint: ["/bin/sh", "/entrypoint.sh"]
     command: ["crond", "-f", "-l", "2"]
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /etc/lego/certificates/${DOMAIN}.crt || exit 0"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
 
 volumes:
   db_data:
   certs:
   acme_challenge:
+  docker-certs:
