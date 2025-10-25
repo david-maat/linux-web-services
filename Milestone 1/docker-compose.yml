@@ -48,6 +48,8 @@ services:
         condition: service_healthy
     ports:
       - "8085:80"  # Required: expose first container on localhost:8085
+    volumes:
+      - ./webserver/www:/var/www/html  # Persist web content on host
     environment:
       MYSQL_HOST: contsql-m1-dm
       MYSQL_DATABASE: ${MYSQL_DATABASE}
