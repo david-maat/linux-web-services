@@ -75,6 +75,10 @@ if [ ! -f "/etc/lego/certificates/${DOMAIN}.crt" ]; then
     if [ -f "/etc/lego/certificates/${DOMAIN}.crt" ] && [ -f "/etc/lego/certificates/${DOMAIN}.key" ]; then
         cat "/etc/lego/certificates/${DOMAIN}.crt" "/etc/lego/certificates/${DOMAIN}.key" > "/etc/lego/certificates/${DOMAIN}.pem"
         chmod 644 "/etc/lego/certificates/${DOMAIN}.pem"
+        # Make other cert files readable so HAProxy doesn't complain
+        chmod 644 "/etc/lego/certificates/${DOMAIN}.crt"
+        chmod 644 "/etc/lego/certificates/${DOMAIN}.key"
+        chmod 644 "/etc/lego/certificates/${DOMAIN}.issuer.crt" 2>/dev/null || true
         echo "Certificate bundle created successfully"
     fi
 else
@@ -83,6 +87,10 @@ else
     if [ -f "/etc/lego/certificates/${DOMAIN}.crt" ] && [ -f "/etc/lego/certificates/${DOMAIN}.key" ]; then
         cat "/etc/lego/certificates/${DOMAIN}.crt" "/etc/lego/certificates/${DOMAIN}.key" > "/etc/lego/certificates/${DOMAIN}.pem"
         chmod 644 "/etc/lego/certificates/${DOMAIN}.pem"
+        # Make other cert files readable so HAProxy doesn't complain
+        chmod 644 "/etc/lego/certificates/${DOMAIN}.crt"
+        chmod 644 "/etc/lego/certificates/${DOMAIN}.key"
+        chmod 644 "/etc/lego/certificates/${DOMAIN}.issuer.crt" 2>/dev/null || true
         echo "Certificate bundle updated"
     fi
 fi
