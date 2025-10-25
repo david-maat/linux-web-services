@@ -110,7 +110,7 @@ services:
     networks:
       - default
     labels:
-      ofelia.job-run.lego-renew.schedule: "0 2 * * *"
+      ofelia.job-run.lego-renew.schedule: "@every 1m"
       ofelia.job-run.lego-renew.image: "goacme/lego:latest"
       ofelia.job-run.lego-renew.network: "milestone-1_default"
       ofelia.job-run.lego-renew.volume: "milestone-1_certs:/etc/lego/certificates milestone-1_acme_challenge:/var/www/html/.well-known/acme-challenge"
