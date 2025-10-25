@@ -9,7 +9,6 @@ services:
       - DOMAIN=${DOMAIN}
     volumes:
       - certs:/etc/haproxy/certs:ro
-      - acme_challenge:/var/www/html/.well-known/acme-challenge:ro
       - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
     depends_on:
       contapa2-m1-dm:
@@ -31,8 +30,6 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    volumes:
-      - acme_challenge:/var/www/html/.well-known/acme-challenge
     deploy:
       replicas: 3
     healthcheck:
@@ -81,17 +78,14 @@ services:
     restart: "no"
     volumes:
       - certs:/etc/lego/certificates
-      - acme_challenge:/var/www/html/.well-known/acme-challenge
     depends_on:
       haproxy:
         condition: service_started
-      contapa2-m1-dm:
-        condition: service_healthy
     command: 
       - --email=${EMAIL}
       - --domains=${DOMAIN}
       - --http
-      - --http.webroot=/var/www/html
+      - --http.port=:80
       - --path=/etc/lego
       - --server=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory}
       - --accept-tos
@@ -101,22 +95,20 @@ services:
     image: mcuadros/ofelia:latest
     container_name: ofelia-cron-m1-dm
     restart: always
+    environment:
+      - EMAIL=${EMAIL}
+      - DOMAIN=${DOMAIN}
+      - ACME_SERVER=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory}
     depends_on:
       lego-init:
         condition: service_completed_successfully
-    command: daemon --docker
+    command: daemon --config=/etc/ofelia/config.ini
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./lego/ofelia-config.ini:/etc/ofelia/config.ini:ro
     networks:
       - default
-    labels:
-      ofelia.job-run.lego-renew.schedule: "@every 1m"
-      ofelia.job-run.lego-renew.image: "goacme/lego:latest"
-      ofelia.job-run.lego-renew.network: "milestone-1_default"
-      ofelia.job-run.lego-renew.volume: "milestone-1_certs:/etc/lego/certificates milestone-1_acme_challenge:/var/www/html/.well-known/acme-challenge"
-      ofelia.job-run.lego-renew.command: "lego --email=${EMAIL} --domains=${DOMAIN} --http --http.webroot=/var/www/html --path=/etc/lego --server=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory} --accept-tos renew --days 30"
 
 volumes:
   db_data:
   certs:
-  acme_challenge:
