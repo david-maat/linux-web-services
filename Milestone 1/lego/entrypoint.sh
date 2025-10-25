@@ -71,8 +71,9 @@ if [ ! -f "/etc/lego/certificates/${DOMAIN}.pem" ]; then
     echo "Temporary certificate created"
 fi
 
-# Initial certificate request (only if certificate doesn't exist)
-if [ ! -f "/etc/lego/certificates/${DOMAIN}.crt" ]; then
+# Initial certificate request (check if it's a real Let's Encrypt certificate)
+# Real LE certs will have the issuer.crt file, self-signed won't
+if [ ! -f "/etc/lego/certificates/${DOMAIN}.issuer.crt" ]; then
     echo "Requesting initial certificate for $DOMAIN..."
     # Wait a bit for HAProxy and webservers to be ready
     sleep 10
