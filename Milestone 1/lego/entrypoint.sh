@@ -1,0 +1,65 @@
+#!/bin/sh
+set -e
+
+echo "Starting LEGO ACME client with Docker-in-Docker..."
+
+# Start Docker daemon in background
+dockerd-entrypoint.sh &
+
+# Wait for Docker daemon to be ready
+echo "Waiting for Docker daemon to start..."
+sleep 10
+
+# Install lego client
+echo "Installing LEGO ACME client..."
+apk add --no-cache curl wget
+
+# Download and install LEGO
+LEGO_VERSION="v4.18.0"
+wget -q "https://github.com/go-acme/lego/releases/download/${LEGO_VERSION}/lego_${LEGO_VERSION}_linux_amd64.tar.gz" -O /tmp/lego.tar.gz
+tar -xzf /tmp/lego.tar.gz -C /usr/local/bin/
+chmod +x /usr/local/bin/lego
+rm /tmp/lego.tar.gz
+
+# Create directories
+mkdir -p /etc/lego/certificates
+mkdir -p /var/www/html/.well-known/acme-challenge
+
+# Set default values if not provided
+DOMAIN=${DOMAIN:-localhost}
+EMAIL=${EMAIL:-admin@localhost}
+ACME_SERVER=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory}
+
+echo "Domain: $DOMAIN"
+echo "Email: $EMAIL"
+echo "ACME Server: $ACME_SERVER"
+
+# Initial certificate request (only if certificate doesn't exist)
+if [ ! -f "/etc/lego/certificates/${DOMAIN}.crt" ]; then
+    echo "Requesting initial certificate for $DOMAIN..."
+    lego --email="$EMAIL" \
+         --domains="$DOMAIN" \
+         --http \
+         --http.webroot="/var/www/html" \
+         --path="/etc/lego" \
+         --server="$ACME_SERVER" \
+         --accept-tos \
+         run
+    
+    # Convert certificate to HAProxy format (PEM bundle)
+    if [ -f "/etc/lego/certificates/${DOMAIN}.crt" ] && [ -f "/etc/lego/certificates/${DOMAIN}.key" ]; then
+        cat "/etc/lego/certificates/${DOMAIN}.crt" "/etc/lego/certificates/${DOMAIN}.key" > "/etc/lego/certificates/${DOMAIN}.pem"
+        chmod 644 "/etc/lego/certificates/${DOMAIN}.pem"
+        echo "Certificate bundle created successfully"
+    fi
+else
+    echo "Certificate already exists, skipping initial request"
+fi
+
+# Make the renewal script executable
+chmod +x /etc/periodic/daily/renew-certs
+
+echo "LEGO ACME client setup complete. Starting crond for automatic renewals..."
+
+# Execute the command passed to the container (crond)
+exec "$@"
