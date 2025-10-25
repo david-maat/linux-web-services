@@ -98,7 +98,7 @@ services:
       - run
 
   cron:
-    image: docker:cli
+    image: justb4/cron    
     container_name: lego-renew-cron
     restart: always
     environment:
@@ -106,12 +106,10 @@ services:
       - DOMAIN=${DOMAIN}
       - ACME_SERVER=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory}
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock
       - ./crontab:/etc/cron.d/lego-renew-crontab:ro
-    entrypoint: ["/bin/sh", "-c"]
-    command: >
-      "apk add --no-cache supercronic &&
-       supercronic -passthrough-logs /etc/cron.d/lego-renew-crontab"
+    command: ["crond", "-f", "-d", "8"]
+
 
 
 
