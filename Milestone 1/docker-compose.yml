@@ -98,7 +98,7 @@ services:
       - run
 
   cron:
-    image: herliansyah/supercronic:3.0   # (or any Supercronic image you choose) :contentReference[oaicite:5]{index=5}
+    image: hectorm/supercronic   # (or any Supercronic image you choose) :contentReference[oaicite:5]{index=5}
     container_name: lego-renew-cron
     restart: always
     environment:
