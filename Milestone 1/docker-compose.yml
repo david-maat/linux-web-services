@@ -97,8 +97,10 @@ services:
       - --accept-tos
       - run
 
-  cron:
-    image: justb4/cron    
+  lego-renew-cron:
+    build:
+      context: .
+      dockerfile: Dockerfile.cron
     container_name: lego-renew-cron
     restart: always
     environment:
@@ -107,8 +109,7 @@ services:
       - ACME_SERVER=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./crontab:/etc/cron.d/lego-renew-crontab:ro
-    command: ["crond", "-f", "-d", "8"]
+      - milestone1_certs:/etc/lego
 
 
 
