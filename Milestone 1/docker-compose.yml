@@ -97,18 +97,18 @@ services:
       - --accept-tos
       - run
 
-cron:
-  image: hectorm/supercronic
-  container_name: lego-renew-cron
-  restart: always
-  environment:
-    - EMAIL=${EMAIL}
-    - DOMAIN=${DOMAIN}
-    - ACME_SERVER=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory}
-  volumes:
-    - /var/run/docker.sock:/var/run/docker.sock:ro
-    - ./crontab:/etc/cron.d/lego-renew-crontab:ro
-  command: ["/etc/cron.d/lego-renew-crontab"]
+  cron:
+    image: hectorm/supercronic
+    container_name: lego-renew-cron
+    restart: always
+    environment:
+      - EMAIL=${EMAIL}
+      - DOMAIN=${DOMAIN}
+      - ACME_SERVER=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./crontab:/etc/cron.d/lego-renew-crontab:ro
+    command: ["/etc/cron.d/lego-renew-crontab"]
 
 
 volumes:
