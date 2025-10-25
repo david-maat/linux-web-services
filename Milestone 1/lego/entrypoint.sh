@@ -12,14 +12,46 @@ sleep 10
 
 # Install lego client
 echo "Installing LEGO ACME client..."
-apk add --no-cache curl wget
+apk add --no-cache curl wget tar
+
+# Detect architecture
+ARCH=$(uname -m)
+case ${ARCH} in
+    x86_64)
+        LEGO_ARCH="amd64"
+        ;;
+    aarch64)
+        LEGO_ARCH="arm64"
+        ;;
+    armv7l)
+        LEGO_ARCH="armv7"
+        ;;
+    *)
+        echo "Unsupported architecture: ${ARCH}"
+        exit 1
+        ;;
+esac
 
 # Download and install LEGO
 LEGO_VERSION="v4.18.0"
-wget -q "https://github.com/go-acme/lego/releases/download/${LEGO_VERSION}/lego_${LEGO_VERSION}_linux_amd64.tar.gz" -O /tmp/lego.tar.gz
-tar -xzf /tmp/lego.tar.gz -C /usr/local/bin/
+echo "Downloading LEGO ${LEGO_VERSION} for linux_${LEGO_ARCH}..."
+wget "https://github.com/go-acme/lego/releases/download/${LEGO_VERSION}/lego_${LEGO_VERSION}_linux_${LEGO_ARCH}.tar.gz" -O /tmp/lego.tar.gz
+
+if [ $? -ne 0 ]; then
+    echo "Failed to download LEGO"
+    exit 1
+fi
+
+echo "Extracting LEGO..."
+tar -xzf /tmp/lego.tar.gz -C /usr/local/bin/ lego
 chmod +x /usr/local/bin/lego
 rm /tmp/lego.tar.gz
+
+# Verify lego is working
+if ! /usr/local/bin/lego --version; then
+    echo "LEGO installation failed"
+    exit 1
+fi
 
 # Create directories
 mkdir -p /etc/lego/certificates
