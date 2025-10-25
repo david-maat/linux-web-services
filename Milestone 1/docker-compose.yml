@@ -81,21 +81,21 @@ services:
   lego-init:
     image: goacme/lego:latest
     container_name: lego-init-m1-dm
-    restart: "no"
+    restart: always
     volumes:
       - certs:/etc/lego/certificates
+      - ./lego/lego-wrapper.sh:/lego-wrapper.sh:ro
     depends_on:
       haproxy:
         condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
     command:
-      - sh
-      - -c
       - |
-        # Try to renew first, if it fails (no cert exists), run initial registration
-        if ! lego --email=${EMAIL} --domains=${DOMAIN} --http --http.port=:80 --path=/etc/lego --server=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory} --accept-tos renew --days 30 2>/dev/null; then
-          echo "Certificate doesn't exist or renewal failed, obtaining new certificate..."
-          lego --email=${EMAIL} --domains=${DOMAIN} --http --http.port=:80 --path=/etc/lego --server=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory} --accept-tos run
-        fi
+        # Run initial certificate acquisition
+        /lego-wrapper.sh
+        # Keep container running and sleep
+        echo "Initial setup complete, entering sleep mode for renewals..."
+        while true; do sleep 86400; done
 
   ofelia:
     image: mcuadros/ofelia:latest
