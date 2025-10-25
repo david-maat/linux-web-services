@@ -85,9 +85,7 @@ services:
     restart: "no"
     volumes:
       - certs:/etc/lego
-    depends_on:
-      haproxy:
-        condition: service_healthy
+    network_mode: host
     command: 
       - --email=${EMAIL}
       - --domains=${DOMAIN}
