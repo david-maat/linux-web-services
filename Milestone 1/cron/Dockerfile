@@ -5,4 +5,4 @@ RUN apk add --no-cache busybox bash
 
 COPY crontab /etc/crontabs/root
 
-CMD ["crond", "-f", "-L", "/dev/stdout"]
+CMD ["crond", "-f", "-d", "8", "-L", "/dev/stdout"]
