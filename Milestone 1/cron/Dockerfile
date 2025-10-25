@@ -1,13 +1,8 @@
+# syntax=docker/dockerfile:1
 FROM docker:cli
 
-# Install cron (dcron) and bash
-RUN apk add --no-cache dcron bash
+RUN apk add --no-cache busybox bash
 
-# Copy the crontab file into the container
 COPY crontab /etc/crontabs/root
 
-# Optional: verify syntax (good for debugging builds)
-RUN crontab -l
-
-# Run cron in the foreground so the container stays alive
-CMD ["crond", "-f", "-d", "8"]
+CMD ["crond", "-f", "-L", "/dev/stdout"]
