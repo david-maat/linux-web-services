@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
 
+# Install gettext for envsubst
+apk add --no-cache gettext
+
 # Generate HAProxy config with environment variables substituted
 envsubst '${DOMAIN}' < /usr/local/etc/haproxy/haproxy.cfg.template > /tmp/haproxy.cfg
 
