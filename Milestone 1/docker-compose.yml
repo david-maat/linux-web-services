@@ -10,7 +10,7 @@ services:
       - certs:/etc/haproxy/certs:ro
       - acme_challenge:/var/www/html/.well-known/acme-challenge:ro
     depends_on:
-      apache:
+      contapa2-m1-dm:
         condition: service_healthy
       # - lego
     restart: always
