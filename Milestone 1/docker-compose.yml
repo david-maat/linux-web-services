@@ -99,8 +99,7 @@ services:
 
   lego-renew-cron:
     build:
-      context: .
-      dockerfile: Dockerfile.cron
+      context: ./cron
     container_name: lego-renew-cron
     restart: always
     environment:
