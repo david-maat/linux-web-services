@@ -76,29 +76,42 @@ services:
         condition: service_healthy
 
   lego:
-    image: alpine:3.22
-    container_name: lego-acme-m1-dm
+    image: goacme/lego:latest
+    container_name: lego-m1-dm
     restart: always
     environment:
-      - DOMAIN=${DOMAIN}
-      - EMAIL=${EMAIL}
-      - ACME_SERVER=${ACME_SERVER}
+      - LEGO_PATH=/etc/lego
     volumes:
       - certs:/etc/lego/certificates
       - acme_challenge:/var/www/html/.well-known/acme-challenge
-      - ./lego/renew.sh:/renew.sh:ro
-      - ./lego/entrypoint.sh:/entrypoint.sh:ro
     depends_on:
       haproxy:
         condition: service_started
-    entrypoint: ["/bin/sh", "/entrypoint.sh"]
-    command: ["crond", "-f", "-l", "2"]
-    healthcheck:
-      test: ["CMD-SHELL", "test -f /etc/lego/certificates/${DOMAIN}.crt || exit 0"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 120s
+      contapa2-m1-dm:
+        condition: service_healthy
+    command: 
+      - --email=${EMAIL}
+      - --domains=${DOMAIN}
+      - --http
+      - --http.webroot=/var/www/html
+      - --path=/etc/lego
+      - --server=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory}
+      - --accept-tos
+      - run
+
+  ofelia:
+    image: mcuadros/ofelia:latest
+    container_name: ofelia-cron-m1-dm
+    restart: always
+    depends_on:
+      - lego
+    command: daemon --docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      ofelia.job-exec.lego-renew.schedule: "@every 60s"
+      ofelia.job-exec.lego-renew.container: "lego-m1-dm"
+      ofelia.job-exec.lego-renew.command: "lego --email=${EMAIL} --domains=${DOMAIN} --http --http.webroot=/var/www/html --path=/etc/lego --server=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory} --accept-tos renew --days 30"
 
 volumes:
   db_data:
