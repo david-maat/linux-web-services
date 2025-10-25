@@ -22,6 +22,7 @@ services:
           if [ -f \"/certs/certificates/$base.key\" ]; then 
             cat \"$cert\" \"/certs/certificates/$base.key\" > \"/certs/certificates/$base.pem\"; 
             chmod 644 \"/certs/certificates/$base.pem\"; 
+            rm \"$cert\" \"/certs/certificates/$base.key\"; 
           fi; 
         fi; 
       done"
