@@ -13,7 +13,15 @@ services:
         -subj '/CN=localhost' && 
       cat /certs/certificates/dummy.crt /certs/certificates/dummy.key > /certs/certificates/dummy.pem &&
       rm /certs/certificates/dummy.crt /certs/certificates/dummy.key &&
-      chmod -R 644 /certs/certificates/*.crt /certs/certificates/*.key /certs/certificates/*.pem 2>/dev/null || true"
+      for cert in /certs/certificates/*.crt; do 
+        if [ -f \"\$cert\" ] && [ \"\$cert\" != *.issuer.crt ]; then 
+          base=\$(basename \"\$cert\" .crt); 
+          if [ -f \"/certs/certificates/\$base.key\" ]; then 
+            cat \"\$cert\" \"/certs/certificates/\$base.key\" > \"/certs/certificates/\$base.pem\"; 
+            chmod 644 \"/certs/certificates/\$base.pem\"; 
+          fi; 
+        fi; 
+      done"
     restart: "no"
 
   haproxy:
