@@ -1,53 +1,37 @@
 services:
-  # Init container to create certificate directory structure
-  cert-init:
-    image: alpine:latest
-    container_name: cert-init-m1-dm
-    volumes:
-      - certs:/certs
-    command: sh -c "mkdir -p /certs/certificates && 
-      apk add --no-cache openssl && 
-      openssl req -x509 -newkey rsa:2048 -nodes -days 1 
-        -keyout /certs/certificates/dummy.key 
-        -out /certs/certificates/dummy.crt 
-        -subj '/CN=localhost' && 
-      cat /certs/certificates/dummy.crt /certs/certificates/dummy.key > /certs/certificates/dummy.pem &&
-      rm /certs/certificates/dummy.crt /certs/certificates/dummy.key &&
-      for cert in /certs/certificates/*.crt; do 
-        if [ -f \"$cert\" ]; then 
-          case \"$cert\" in 
-            *.issuer.crt) continue ;; 
-          esac; 
-          base=$(basename \"$cert\" .crt); 
-          if [ -f \"/certs/certificates/$base.key\" ]; then 
-            cat \"$cert\" \"/certs/certificates/$base.key\" > \"/certs/certificates/$base.pem\"; 
-            chmod 644 \"/certs/certificates/$base.pem\"; 
-            rm \"$cert\" \"/certs/certificates/$base.key\"; 
-          fi; 
-        fi; 
-      done"
-    restart: "no"
-
-  haproxy:
-    image: haproxy:3.0-alpine
-    container_name: haproxy-m1-dm
+  # Traefik reverse proxy with automatic HTTPS
+  traefik:
+    image: traefik:v3.2
+    container_name: traefik-m1-dm
     ports:
-      - 80:80
-      - 443:443
-    environment:
-      - DOMAIN=${DOMAIN}
+      - "80:80"
+      - "443:443"
+      - "8080:8080"  # Dashboard
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.email=${EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.letsencrypt.acme.caserver=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory}"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--providers.docker=true"
+      - "--providers.docker.endpoint=unix:///var/run/docker.sock"
+      - "--providers.docker.exposedbydefault=false"
+      - "--log.level=INFO"
     volumes:
-      - certs:/etc/haproxy/certs:ro
-      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
-      - ./haproxy/crt-list.txt:/usr/local/etc/haproxy/crt-list.txt:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik-certs:/letsencrypt
     depends_on:
-      cert-init:
-        condition: service_completed_successfully
       contapa2-m1-dm:
         condition: service_healthy
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "pidof haproxy || exit 1"]
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
       interval: 5s
       timeout: 3s
       retries: 3
@@ -61,8 +45,6 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
-    # ports:
-    #   - 8085-8087:80
     environment:
       MYSQL_HOST: contsql-m1-dm
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -71,6 +53,12 @@ services:
       COMPOSE_PROJECT_NAME: milestone1
     deploy:
       replicas: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.web.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.web.entrypoints=websecure"
+      - "traefik.http.routers.web.tls.certresolver=letsencrypt"
+      - "traefik.http.services.web.loadbalancer.server.port=80"
     healthcheck:
       test: ["CMD", "curl", "-f", "-s", "http://localhost/"]
       interval: 30s
@@ -111,63 +99,6 @@ services:
       mysql:
         condition: service_healthy
 
-  lego-init:
-    image: goacme/lego:latest
-    container_name: lego-init-m1-dm
-    restart: "no"
-    volumes:
-      - certs:/etc/lego
-    depends_on:
-      haproxy:
-        condition: service_healthy
-    command: 
-      - --email=${EMAIL}
-      - --domains=${DOMAIN}
-      - --http
-      - --http.port=:80
-      - --path=/etc/lego
-      - --server=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory}
-      - --accept-tos
-      - run
-
-  lego-renew:
-    image: goacme/lego:latest
-    container_name: lego-renew-m1-dm
-    profiles:
-      - renew
-    volumes:
-      - certs:/etc/lego
-    environment:
-      - EMAIL=${EMAIL}
-      - DOMAIN=${DOMAIN}
-      - ACME_SERVER=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory}
-    command: 
-      - --email=${EMAIL}
-      - --domains=${DOMAIN}
-      - --http
-      - --http.port=:80
-      - --path=/etc/lego
-      - --server=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory}
-      - --accept-tos
-      - renew
-      - --days
-      - "30"
-
-  lego-renew-cron:
-    build:
-      context: ./cron
-    container_name: lego-renew-cron
-    restart: always
-    environment:
-      - EMAIL=${EMAIL}
-      - DOMAIN=${DOMAIN}
-      - ACME_SERVER=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory}
-      - COMPOSE_PROJECT_NAME=milestone1
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./docker-compose.yml:/docker-compose.yml:ro
-      - ./.env:/.env:ro
-
 volumes:
   db_data:
-  certs:
+  traefik-certs:
