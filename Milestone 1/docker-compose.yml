@@ -81,21 +81,21 @@ services:
   lego-init:
     image: goacme/lego:latest
     container_name: lego-init-m1-dm
-    restart: always
+    restart: "no"
     volumes:
       - certs:/etc/lego/certificates
-      - ./lego/lego-wrapper.sh:/lego-wrapper.sh:ro
     depends_on:
       haproxy:
         condition: service_healthy
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        # Run initial certificate acquisition
-        sh /lego-wrapper.sh
-        # Keep container running and sleep
-        echo "Initial setup complete, entering sleep mode for renewals..."
-        while true; do sleep 86400; done
+    command: 
+      - --email=${EMAIL}
+      - --domains=${DOMAIN}
+      - --http
+      - --http.port=:80
+      - --path=/etc/lego
+      - --server=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory}
+      - --accept-tos
+      - run
 
   ofelia:
     image: mcuadros/ofelia:latest
