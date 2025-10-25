@@ -15,11 +15,11 @@ services:
         condition: service_healthy
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "nc -zv localhost 80 && nc -zv localhost 443"]
-      interval: 2s
-      timeout: 1s
-      retries: 5
-      start_period: 2s
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:80 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
 
 # Named the service as contapa2-m1-dm, because when scaling the service, you cannot have multiple containers with the same name.
   contapa2-m1-dm:
