@@ -1,1 +1,1 @@
-/etc/haproxy/certs/certificates/${DOMAIN}.crt optional
+/etc/haproxy/certs/certificates/*.pem optional
