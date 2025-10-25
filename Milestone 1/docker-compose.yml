@@ -47,7 +47,7 @@ services:
       mysql:
         condition: service_healthy
     ports:
-      - "8085-8087:80"  # Port range for 3 replicas (8085, 8086, 8087)
+      - "8085-8095:80"
     volumes:
       - ./webserver/www:/var/www/html  # Persist web content on host
     environment:
@@ -95,7 +95,7 @@ services:
     container_name: phpmyadmin-m1-dm
     restart: always
     ports:
-      - 8088:80  # Changed from 8086 to avoid conflict with web replicas
+      - 8081:80 
     environment:
       PMA_HOST: mysql
       PMA_PORT: 3306
