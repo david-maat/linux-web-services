@@ -14,6 +14,12 @@ services:
       contapa2-m1-dm:
         condition: service_healthy
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "nc -zv localhost 80 && nc -zv localhost 443"]
+      interval: 2s
+      timeout: 1s
+      retries: 5
+      start_period: 2s
 
 # Named the service as contapa2-m1-dm, because when scaling the service, you cannot have multiple containers with the same name.
   contapa2-m1-dm:
@@ -80,7 +86,7 @@ services:
       - certs:/etc/lego/certificates
     depends_on:
       haproxy:
-        condition: service_started
+        condition: service_healthy
     command: 
       - --email=${EMAIL}
       - --domains=${DOMAIN}
