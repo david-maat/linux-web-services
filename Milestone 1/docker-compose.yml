@@ -95,7 +95,8 @@ services:
       - --path=/etc/lego
       - --server=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory}
       - --accept-tos
-      - run
+      - renew
+      - --days=30
 
   ofelia:
     image: mcuadros/ofelia:latest
