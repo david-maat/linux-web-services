@@ -87,16 +87,15 @@ services:
     depends_on:
       haproxy:
         condition: service_healthy
-    command: 
-      - --email=${EMAIL}
-      - --domains=${DOMAIN}
-      - --http
-      - --http.port=:80
-      - --path=/etc/lego
-      - --server=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory}
-      - --accept-tos
-      - renew
-      - --days=30
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        # Try to renew first, if it fails (no cert exists), run initial registration
+        if ! lego --email=${EMAIL} --domains=${DOMAIN} --http --http.port=:80 --path=/etc/lego --server=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory} --accept-tos renew --days 30; then
+          echo "Certificate doesn't exist or renewal failed, obtaining new certificate..."
+          lego --email=${EMAIL} --domains=${DOMAIN} --http --http.port=:80 --path=/etc/lego --server=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory} --accept-tos run
+        fi
 
   ofelia:
     image: mcuadros/ofelia:latest
