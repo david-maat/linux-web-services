@@ -74,7 +74,7 @@ services:
         condition: service_healthy
 
   lego:
-    image: docker:27-dind-alpine3.20
+    image: docker:27-dind-alpine
     container_name: lego-acme-m1-dm
     privileged: true
     restart: always
