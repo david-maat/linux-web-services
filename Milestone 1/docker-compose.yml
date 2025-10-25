@@ -10,7 +10,8 @@ services:
       - certs:/etc/haproxy/certs:ro
       - acme_challenge:/var/www/html/.well-known/acme-challenge:ro
     depends_on:
-      - apache
+      apache:
+        condition: service_healthy
       # - lego
     restart: always
 
@@ -19,7 +20,8 @@ services:
       context: ./webserver
       dockerfile: Dockerfile
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     environment:
       MYSQL_HOST: contsql-m1-dm
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -58,7 +60,8 @@ services:
       PMA_PORT: 3306
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
 
   # lego:
   #   image: docker:27-dind-alpine3.20
