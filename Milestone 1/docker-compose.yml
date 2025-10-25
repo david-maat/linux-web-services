@@ -98,14 +98,18 @@ services:
       - run
 
   cron:
-    image: crazymax/cron:latest
+    image: herliansyah/supercronic:3.0   # (or any Supercronic image you choose) :contentReference[oaicite:5]{index=5}
+    container_name: lego-renew-cron
+    restart: always
     environment:
       - EMAIL=${EMAIL}
       - DOMAIN=${DOMAIN}
-      - ACME_SERVER=${ACME_SERVER}
+      - ACME_SERVER=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory}
     volumes:
-      - ./crontab:/etc/crontabs/root
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./crontab:/etc/cron.d/lego-renew-crontab:ro
+    command: >
+      supercronic /etc/cron.d/lego-renew-crontab
 
 
 volumes:
