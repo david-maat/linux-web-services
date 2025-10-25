@@ -14,11 +14,14 @@ services:
       cat /certs/certificates/dummy.crt /certs/certificates/dummy.key > /certs/certificates/dummy.pem &&
       rm /certs/certificates/dummy.crt /certs/certificates/dummy.key &&
       for cert in /certs/certificates/*.crt; do 
-        if [ -f \"\$cert\" ] && [ \"\$cert\" != *.issuer.crt ]; then 
-          base=\$(basename \"\$cert\" .crt); 
-          if [ -f \"/certs/certificates/\$base.key\" ]; then 
-            cat \"\$cert\" \"/certs/certificates/\$base.key\" > \"/certs/certificates/\$base.pem\"; 
-            chmod 644 \"/certs/certificates/\$base.pem\"; 
+        if [ -f \"$cert\" ]; then 
+          case \"$cert\" in 
+            *.issuer.crt) continue ;; 
+          esac; 
+          base=$(basename \"$cert\" .crt); 
+          if [ -f \"/certs/certificates/$base.key\" ]; then 
+            cat \"$cert\" \"/certs/certificates/$base.key\" > \"/certs/certificates/$base.pem\"; 
+            chmod 644 \"/certs/certificates/$base.pem\"; 
           fi; 
         fi; 
       done"
