@@ -75,12 +75,10 @@ services:
       mysql:
         condition: service_healthy
 
-  lego:
+  lego-init:
     image: goacme/lego:latest
-    container_name: lego-m1-dm
-    restart: always
-    environment:
-      - LEGO_PATH=/etc/lego
+    container_name: lego-init-m1-dm
+    restart: "no"
     volumes:
       - certs:/etc/lego/certificates
       - acme_challenge:/var/www/html/.well-known/acme-challenge
@@ -104,14 +102,19 @@ services:
     container_name: ofelia-cron-m1-dm
     restart: always
     depends_on:
-      - lego
+      lego-init:
+        condition: service_completed_successfully
     command: daemon --docker
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - default
     labels:
-      ofelia.job-exec.lego-renew.schedule: "@every 60s"
-      ofelia.job-exec.lego-renew.container: "lego-m1-dm"
-      ofelia.job-exec.lego-renew.command: "lego --email=${EMAIL} --domains=${DOMAIN} --http --http.webroot=/var/www/html --path=/etc/lego --server=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory} --accept-tos renew --days 30"
+      ofelia.job-run.lego-renew.schedule: "0 2 * * *"
+      ofelia.job-run.lego-renew.image: "goacme/lego:latest"
+      ofelia.job-run.lego-renew.network: "milestone-1_default"
+      ofelia.job-run.lego-renew.volume: "milestone-1_certs:/etc/lego/certificates milestone-1_acme_challenge:/var/www/html/.well-known/acme-challenge"
+      ofelia.job-run.lego-renew.command: "lego --email=${EMAIL} --domains=${DOMAIN} --http --http.webroot=/var/www/html --path=/etc/lego --server=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory} --accept-tos renew --days 30"
 
 volumes:
   db_data:
