@@ -13,6 +13,7 @@ services:
       contapa2-m1-dm:
         condition: service_healthy
       lego:
+        condition: service_healthy
     restart: always
 
 # Named the service as contapa2-m1-dm, because when scaling the service, you cannot have multiple containers with the same name.
