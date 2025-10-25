@@ -5,7 +5,16 @@ services:
     container_name: cert-init-m1-dm
     volumes:
       - certs:/certs
-    command: sh -c "mkdir -p /certs/certificates && chmod 755 /certs/certificates"
+    command: sh -c "mkdir -p /certs/certificates && 
+      apk add --no-cache openssl && 
+      if [ ! -f /certs/certificates/dummy.pem ]; then 
+        openssl req -x509 -newkey rsa:2048 -nodes -days 1 
+          -keyout /certs/certificates/dummy.key 
+          -out /certs/certificates/dummy.crt 
+          -subj '/CN=localhost'; 
+        cat /certs/certificates/dummy.crt /certs/certificates/dummy.key > /certs/certificates/dummy.pem;
+        rm /certs/certificates/dummy.crt /certs/certificates/dummy.key;
+      fi"
     restart: "no"
 
   haproxy:
