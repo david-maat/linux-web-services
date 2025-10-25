@@ -15,11 +15,11 @@ services:
       # - lego
     restart: always
 
-  apache:
+# Named the service as contapa2-m1-dm, because when scaling the service, you cannot have multiple containers with the same name.
+  contapa2-m1-dm:
     build:
       context: ./webserver
       dockerfile: Dockerfile
-    container_name: contapa2-m1-dm
     depends_on:
       mysql:
         condition: service_healthy
