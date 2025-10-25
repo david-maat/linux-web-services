@@ -108,10 +108,6 @@ services:
       - ACME_SERVER=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - milestone1_certs:/etc/lego
-
-
-
 
 volumes:
   db_data:
