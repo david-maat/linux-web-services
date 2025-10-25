@@ -11,8 +11,6 @@ services:
       - certs:/etc/haproxy/certs:ro
       - acme_challenge:/var/www/html/.well-known/acme-challenge:ro
       - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
-      - ./haproxy/haproxy-entrypoint.sh:/haproxy-entrypoint.sh:ro
-    entrypoint: ["/bin/sh", "/haproxy-entrypoint.sh"]
     depends_on:
       contapa2-m1-dm:
         condition: service_healthy
