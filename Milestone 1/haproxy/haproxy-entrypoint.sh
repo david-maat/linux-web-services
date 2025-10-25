@@ -25,5 +25,6 @@ else
 fi
 
 # Start HAProxy with the default configuration
-echo "Starting HAProxy..."
+echo "Starting HAProxy... with ${DOMAIN}"
+
 exec haproxy -f /usr/local/etc/haproxy/haproxy.cfg
