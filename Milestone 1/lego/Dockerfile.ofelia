@@ -1,7 +1,0 @@
-FROM mcuadros/ofelia:latest
-
-# Install docker CLI
-RUN apk add --no-cache docker-cli
-
-# Use the same entrypoint as the base image
-ENTRYPOINT ["/usr/bin/ofelia"]
