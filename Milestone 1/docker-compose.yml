@@ -24,8 +24,8 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
-    ports:
-      - 8085-8087:80
+    # ports:
+    #   - 8085-8087:80
     environment:
       MYSQL_HOST: contsql-m1-dm
       MYSQL_DATABASE: ${MYSQL_DATABASE}
