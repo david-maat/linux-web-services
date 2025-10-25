@@ -3,8 +3,8 @@ services:
     image: haproxy:3.0-alpine
     container_name: haproxy-m1-dm
     ports:
-      - 8085:80
-      - 8443:443
+      - 80:80
+      - 443:443
     volumes:
       - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
       - certs:/etc/haproxy/certs:ro
@@ -12,7 +12,7 @@ services:
     depends_on:
       contapa2-m1-dm:
         condition: service_healthy
-      # - lego
+      lego:
     restart: always
 
 # Named the service as contapa2-m1-dm, because when scaling the service, you cannot have multiple containers with the same name.
@@ -23,6 +23,8 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+    ports:
+      - 8085-8087:80
     environment:
       MYSQL_HOST: contsql-m1-dm
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -70,23 +72,23 @@ services:
       mysql:
         condition: service_healthy
 
-  # lego:
-  #   image: docker:27-dind-alpine3.20
-  #   container_name: lego-acme-m1-dm
-  #   privileged: true
-  #   restart: always
-  #   environment:
-  #     - DOMAIN=${DOMAIN}
-  #     - EMAIL=${EMAIL}
-  #     - ACME_SERVER=${ACME_SERVER}
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #     - certs:/etc/lego/certificates
-  #     - acme_challenge:/var/www/html/.well-known/acme-challenge
-  #     - ./lego/renew.sh:/etc/periodic/daily/renew-certs:ro
-  #     - ./lego/entrypoint.sh:/entrypoint.sh:ro
-  #   entrypoint: ["/entrypoint.sh"]
-  #   command: ["crond", "-f", "-l", "2"]
+  lego:
+    image: docker:27-dind-alpine3.20
+    container_name: lego-acme-m1-dm
+    privileged: true
+    restart: always
+    environment:
+      - DOMAIN=${DOMAIN}
+      - EMAIL=${EMAIL}
+      - ACME_SERVER=${ACME_SERVER}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - certs:/etc/lego/certificates
+      - acme_challenge:/var/www/html/.well-known/acme-challenge
+      - ./lego/renew.sh:/etc/periodic/daily/renew-certs:ro
+      - ./lego/entrypoint.sh:/entrypoint.sh:ro
+    entrypoint: ["/entrypoint.sh"]
+    command: ["crond", "-f", "-l", "2"]
 
 volumes:
   db_data:
