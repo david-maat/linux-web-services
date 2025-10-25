@@ -92,7 +92,7 @@ services:
     command:
       - |
         # Run initial certificate acquisition
-        /lego-wrapper.sh
+        sh /lego-wrapper.sh
         # Keep container running and sleep
         echo "Initial setup complete, entering sleep mode for renewals..."
         while true; do sleep 86400; done
