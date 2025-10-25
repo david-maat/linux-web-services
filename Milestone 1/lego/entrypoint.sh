@@ -79,6 +79,12 @@ if [ ! -f "/etc/lego/certificates/${DOMAIN}.crt" ]; then
     fi
 else
     echo "Certificate already exists, skipping initial request"
+    # Still create/update the PEM bundle for HAProxy
+    if [ -f "/etc/lego/certificates/${DOMAIN}.crt" ] && [ -f "/etc/lego/certificates/${DOMAIN}.key" ]; then
+        cat "/etc/lego/certificates/${DOMAIN}.crt" "/etc/lego/certificates/${DOMAIN}.key" > "/etc/lego/certificates/${DOMAIN}.pem"
+        chmod 644 "/etc/lego/certificates/${DOMAIN}.pem"
+        echo "Certificate bundle updated"
+    fi
 fi
 
 # Copy the renewal script to the cron directory and make it executable
