@@ -87,7 +87,7 @@ services:
     volumes:
       - certs:/etc/lego
     depends_on:
-      - serviceName: haproxy
+      haproxy:
         condition: service_healthy
     command: 
       - --email=${EMAIL}
