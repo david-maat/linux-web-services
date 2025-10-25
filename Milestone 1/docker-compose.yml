@@ -3,8 +3,8 @@ services:
     image: haproxy:3.0-alpine
     container_name: haproxy-m1-dm
     ports:
-      - 80:80
-      - 443:443
+      - 8085:80
+      - 8443:443
     volumes:
       - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
       - certs:/etc/haproxy/certs:ro
@@ -46,7 +46,7 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u${MYSQL_USER} -p${MYSQL_ROOT_PASSWORD} || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
