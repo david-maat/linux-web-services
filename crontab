@@ -1,0 +1,3 @@
+*/5 * * * * docker run --rm -v milestone1_certs:/etc/lego goacme/lego:latest \
+  --email=$EMAIL --domains=$DOMAIN --http --http.port=:80 --path=/etc/lego \
+  --server=$ACME_SERVER --accept-tos renew --days 30

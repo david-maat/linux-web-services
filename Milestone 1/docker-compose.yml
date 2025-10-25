@@ -97,25 +97,16 @@ services:
       - --accept-tos
       - run
 
-  ofelia:
-    build:
-      context: ./lego
-      dockerfile: Dockerfile.ofelia
-    container_name: ofelia-cron-m1-dm
-    restart: always
+  cron:
+    image: crazymax/cron:latest
     environment:
       - EMAIL=${EMAIL}
       - DOMAIN=${DOMAIN}
-      - ACME_SERVER=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory}
-    depends_on:
-      lego-init:
-        condition: service_completed_successfully
-    command: daemon --config=/etc/ofelia/config.ini
+      - ACME_SERVER=${ACME_SERVER}
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./lego/ofelia-config.ini:/etc/ofelia/config.ini:ro
-    networks:
-      - default
+      - ./crontab:/etc/crontabs/root
+      - /var/run/docker.sock:/var/run/docker.sock
+
 
 volumes:
   db_data:
