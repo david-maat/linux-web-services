@@ -1,4 +1,13 @@
 services:
+  # Init container to create certificate directory structure
+  cert-init:
+    image: alpine:latest
+    container_name: cert-init-m1-dm
+    volumes:
+      - certs:/certs
+    command: sh -c "mkdir -p /certs/certificates && chmod 755 /certs/certificates"
+    restart: "no"
+
   haproxy:
     image: haproxy:3.0-alpine
     container_name: haproxy-m1-dm
@@ -12,6 +21,8 @@ services:
       - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
       - ./haproxy/crt-list.txt:/usr/local/etc/haproxy/crt-list.txt:ro
     depends_on:
+      cert-init:
+        condition: service_completed_successfully
       contapa2-m1-dm:
         condition: service_healthy
     restart: always
