@@ -19,6 +19,7 @@ services:
     build:
       context: ./webserver
       dockerfile: Dockerfile
+    container_name: contapa2-m1-dm
     depends_on:
       mysql:
         condition: service_healthy
