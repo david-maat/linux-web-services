@@ -14,7 +14,6 @@ echo "Checking if renewal is needed for $DOMAIN..."
 
 lego --email="$EMAIL" \
      --domains="$DOMAIN" \
-     --http \
      --http.webroot="/var/www/html" \
      --path="/etc/lego" \
      --server="$ACME_SERVER" \

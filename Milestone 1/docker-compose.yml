@@ -14,8 +14,6 @@ services:
     depends_on:
       contapa2-m1-dm:
         condition: service_healthy
-      lego:
-        condition: service_healthy
     restart: always
 
 # Named the service as contapa2-m1-dm, because when scaling the service, you cannot have multiple containers with the same name.
@@ -90,6 +88,9 @@ services:
       - acme_challenge:/var/www/html/.well-known/acme-challenge
       - ./lego/renew.sh:/renew.sh:ro
       - ./lego/entrypoint.sh:/entrypoint.sh:ro
+    depends_on:
+      haproxy:
+        condition: service_started
     entrypoint: ["/bin/sh", "/entrypoint.sh"]
     command: ["crond", "-f", "-l", "2"]
     healthcheck:

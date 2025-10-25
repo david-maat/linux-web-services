@@ -59,12 +59,25 @@ echo "Domain: $DOMAIN"
 echo "Email: $EMAIL"
 echo "ACME Server: $ACME_SERVER"
 
+# Create a self-signed certificate for HAProxy to start with (if no cert exists)
+if [ ! -f "/etc/lego/certificates/${DOMAIN}.pem" ]; then
+    echo "Creating temporary self-signed certificate for initial HAProxy startup..."
+    apk add --no-cache openssl
+    openssl req -x509 -newkey rsa:2048 -keyout "/etc/lego/certificates/${DOMAIN}.key" \
+        -out "/etc/lego/certificates/${DOMAIN}.crt" \
+        -days 1 -nodes -subj "/CN=${DOMAIN}"
+    cat "/etc/lego/certificates/${DOMAIN}.crt" "/etc/lego/certificates/${DOMAIN}.key" > "/etc/lego/certificates/${DOMAIN}.pem"
+    chmod 644 "/etc/lego/certificates/${DOMAIN}.pem"
+    echo "Temporary certificate created"
+fi
+
 # Initial certificate request (only if certificate doesn't exist)
 if [ ! -f "/etc/lego/certificates/${DOMAIN}.crt" ]; then
     echo "Requesting initial certificate for $DOMAIN..."
+    # Wait a bit for HAProxy and webservers to be ready
+    sleep 10
     lego --email="$EMAIL" \
          --domains="$DOMAIN" \
-         --http \
          --http.webroot="/var/www/html" \
          --path="/etc/lego" \
          --server="$ACME_SERVER" \
