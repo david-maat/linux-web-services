@@ -129,9 +129,11 @@ services:
       - EMAIL=${EMAIL}
       - DOMAIN=${DOMAIN}
       - ACME_SERVER=${ACME_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory}
+      - COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-milestone1}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./docker-compose.yml:/docker-compose.yml:ro
+      - ./.env:/.env:ro
 
 volumes:
   db_data:

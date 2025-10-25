@@ -1,1 +1,1 @@
-* * * * * docker compose -f /docker-compose.yml run --rm lego-renew
+* * * * * docker compose -f /docker-compose.yml --env-file /.env --project-name ${COMPOSE_PROJECT_NAME} run --rm lego-renew
