@@ -31,6 +31,8 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - acme_challenge:/var/www/html/.well-known/acme-challenge
     deploy:
       replicas: 3
     healthcheck:
