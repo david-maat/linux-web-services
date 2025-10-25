@@ -79,6 +79,7 @@ if [ ! -f "/etc/lego/certificates/${DOMAIN}.issuer.crt" ]; then
     sleep 10
     lego --email="$EMAIL" \
          --domains="$DOMAIN" \
+         --http \
          --http.webroot="/var/www/html" \
          --path="/etc/lego" \
          --server="$ACME_SERVER" \
