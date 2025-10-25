@@ -2,7 +2,7 @@
 set -e
 
 # Generate HAProxy config with environment variables substituted
-envsubst '${DOMAIN}' < /usr/local/etc/haproxy/haproxy.cfg.template > /usr/local/etc/haproxy/haproxy.cfg
+envsubst '${DOMAIN}' < /usr/local/etc/haproxy/haproxy.cfg.template > /tmp/haproxy.cfg
 
 # Start HAProxy
-exec haproxy -f /usr/local/etc/haproxy/haproxy.cfg
+exec haproxy -f /tmp/haproxy.cfg
