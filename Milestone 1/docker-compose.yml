@@ -83,7 +83,7 @@ services:
     container_name: lego-init-m1-dm
     restart: "no"
     volumes:
-      - certs:/etc/lego/certificates
+      - certs:/etc/lego
     depends_on:
       haproxy:
         condition: service_healthy
