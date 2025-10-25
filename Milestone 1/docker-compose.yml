@@ -12,7 +12,8 @@ services:
         -out /certs/certificates/dummy.crt 
         -subj '/CN=localhost' && 
       cat /certs/certificates/dummy.crt /certs/certificates/dummy.key > /certs/certificates/dummy.pem &&
-      rm /certs/certificates/dummy.crt /certs/certificates/dummy.key"
+      rm /certs/certificates/dummy.crt /certs/certificates/dummy.key &&
+      chmod -R 644 /certs/certificates/*.crt /certs/certificates/*.key /certs/certificates/*.pem 2>/dev/null || true"
     restart: "no"
 
   haproxy:
