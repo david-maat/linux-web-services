@@ -1,14 +1,7 @@
 #!/bin/sh
 set -e
 
-echo "Starting LEGO ACME client with Docker-in-Docker..."
-
-# Start Docker daemon in background
-dockerd-entrypoint.sh &
-
-# Wait for Docker daemon to be ready
-echo "Waiting for Docker daemon to start..."
-sleep 10
+echo "Starting LEGO ACME client setup..."
 
 # Install lego client
 echo "Installing LEGO ACME client..."
@@ -88,7 +81,8 @@ else
     echo "Certificate already exists, skipping initial request"
 fi
 
-# Make the renewal script executable
+# Copy the renewal script to the cron directory and make it executable
+cp /renew.sh /etc/periodic/daily/renew-certs
 chmod +x /etc/periodic/daily/renew-certs
 
 echo "LEGO ACME client setup complete. Starting crond for automatic renewals..."
