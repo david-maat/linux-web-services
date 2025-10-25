@@ -98,7 +98,7 @@ services:
       - run
 
   cron:
-    image: hectorm/supercronic
+    image: docker:cli
     container_name: lego-renew-cron
     restart: always
     environment:
@@ -108,7 +108,11 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./crontab:/etc/cron.d/lego-renew-crontab:ro
-    command: ["/etc/cron.d/lego-renew-crontab"]
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      "apk add --no-cache supercronic &&
+       supercronic -passthrough-logs /etc/cron.d/lego-renew-crontab"
+
 
 
 volumes:
