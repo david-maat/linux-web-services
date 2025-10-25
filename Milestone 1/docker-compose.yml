@@ -98,7 +98,9 @@ services:
       - run
 
   ofelia:
-    image: mcuadros/ofelia:latest
+    build:
+      context: ./lego
+      dockerfile: Dockerfile.ofelia
     container_name: ofelia-cron-m1-dm
     restart: always
     environment:
