@@ -1,1 +1,1 @@
-/etc/haproxy/certs/certificates/*.pem optional
+/etc/haproxy/certs/certificates optional
