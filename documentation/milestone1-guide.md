@@ -405,7 +405,6 @@ deploy:
 | `MYSQL_DATABASE` | Database name | From `.env` file |
 | `MYSQL_USER` | Database username | From `.env` file |
 | `MYSQL_PASSWORD` | Database password | From `.env` file |
-| `COMPOSE_PROJECT_NAME` | Project namespace | Hardcoded: `milestone1` |
 
 **Volumes:**
 - `./webserver/www:/var/www/html`: Bind mount for live code updates (development)
