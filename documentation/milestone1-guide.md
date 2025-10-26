@@ -10,6 +10,8 @@
 7. [Step-by-Step Deployment Guide](#step-by-step-deployment-guide)
 8. [Service Descriptions](#service-descriptions)
 9. [Verification and Testing](#verification-and-testing)
+10. [Troubleshooting](#troubleshooting)
+11. [Cleanup](#cleanup)
 
 ---
 
@@ -44,7 +46,7 @@ The stack demonstrates:
           ┌────────────┴────────────┐
           ↓                         ↓
     Web Servers (×3)          phpMyAdmin
-    Ports 8085-8095           Port 8081
+    Ports 8085-8087           Port 8088
     (Load Balanced)
           ↓
        MySQL Database
@@ -57,10 +59,10 @@ The stack demonstrates:
 
 Before deploying this stack, ensure you have:
 
-1. **Docker Engine**
+1. **Docker Engine** (version 20.10 or later)
    - Check version: `docker --version`
    
-2. **Docker Compose**
+2. **Docker Compose** (version 2.0 or later)
    - Check version: `docker compose version`
 
 3. **Operating System**: 
@@ -72,7 +74,7 @@ Before deploying this stack, ensure you have:
    - DNS properly configured to point to your server's IP
 
 5. **Network Requirements**:
-   - Ports 80, 443, 8080, 8085-8095, 8081 available
+   - Ports 80, 443, 8080, 8085-8088 available
    - Internet connection for pulling images and obtaining SSL certificates
 
 ---
@@ -82,7 +84,6 @@ Before deploying this stack, ensure you have:
 ```
 Milestone 1/
 ├── docker-compose.yml          # Main orchestration file
-├── .env.example                # Copy to .env and fill in for production
 ├── webserver/                  # Web server configuration
 │   ├── Dockerfile              # Custom Apache/PHP image
 │   ├── 000-default.conf        # Apache VirtualHost configuration
@@ -138,7 +139,7 @@ PHP application that:
 
 ## Environment Variables
 
-Copy `.env.example` to `.env` in the `Milestone 1/` directory with the following variables:
+Create a `.env` file in the `Milestone 1/` directory with the following variables:
 
 ```env
 # Email for Let's Encrypt notifications
@@ -178,7 +179,7 @@ MYSQL_PASSWORD=secure_user_password_here
 ### Step 1: Clone or Navigate to Project Directory
 
 ```powershell
-cd ~\"Milestone 1"
+cd "c:\Users\David\OneDrive - Thomas More\Semester 3\Linux Web Services\git\Milestone 1"
 ```
 
 **Explanation**: Navigate to the directory containing the `docker-compose.yml` file.
@@ -190,13 +191,12 @@ cd ~\"Milestone 1"
 Create a `.env` file with your configuration:
 
 ```powershell
-cp .env.example .env && vim .env
+vim .env
 ```
 
-**Explanation**: This opens vim to create the environment file. Fill in the environment variables from the [Environment Variables](#environment-variables) section and save.
+**Explanation**: This opens vim to create the environment file. Paste the environment variables from the [Environment Variables](#environment-variables) section and save.
 
-**Screenshot**:
-![Environment file example](./screenshots/environment-content.png)
+**Screenshot placeholder**: [Insert screenshot of .env file contents]
 
 ---
 
@@ -213,7 +213,7 @@ docker compose config
 - Environment variables properly substituted
 - All services listed correctly
 
-**Partial screenshot**: ![Compose config partial](./screenshots/compose-config.png)
+**Screenshot placeholder**: [Insert screenshot of docker compose config output]
 
 ---
 
@@ -228,10 +228,10 @@ docker compose pull
 **Images pulled:**
 - `traefik:v3.2` (Reverse proxy)
 - `mysql:lts` (Database)
-- `phpmyadmin:latest` (Database admin tool, latest is okay here, since it's not exposed publicly)
+- `phpmyadmin:latest` (Database admin tool)
 - `ubuntu:24.04` (Base image for custom web server)
 
-**Screenshot**: ![Compose pull](./screenshots/compose-pull.png)
+**Screenshot placeholder**: [Insert screenshot of docker compose pull progress]
 
 ---
 
@@ -259,7 +259,7 @@ docker compose build
 | `EXPOSE 80` | Document that container listens on port 80 |
 | `CMD ["/start.sh"]` | Default command to run when container starts |
 
-**Screenshot**: ![Compose builc](./screenshots/compose-build.png)
+**Screenshot placeholder**: [Insert screenshot of docker compose build output]
 
 ---
 
@@ -283,7 +283,7 @@ docker compose up -d
 6. Starts phpMyAdmin
 7. Starts Traefik reverse proxy
 
-**Screenshot**: ![Compose up -d](./screenshots/compose-up-d.png)
+**Screenshot placeholder**: [Insert screenshot of docker compose up -d output]
 
 ---
 
@@ -300,7 +300,7 @@ docker compose ps
 - `Up (health: starting)`: Container is running but health check hasn't passed yet
 - `Exit`: Container has stopped
 
-**Screenshot**: ![Compose ps](./screenshots/compose-ps.png)
+**Screenshot placeholder**: [Insert screenshot of docker compose ps output showing all healthy containers]
 
 ---
 
@@ -326,7 +326,48 @@ docker compose logs -f contapa2-m1-dm
 - `--tail=100`: Show only last 100 lines
 - `--timestamps`: Add timestamps to log entries
 
-**Screenshot**: ![Compose logs](./screenshots/compose-logs.png)
+**Screenshot placeholder**: [Insert screenshot of docker compose logs output]
+
+---
+
+### Step 9: Verify Network and Volumes
+
+List networks:
+```powershell
+docker network ls
+```
+
+Inspect the stack's network:
+```powershell
+docker network inspect milestone1_default
+```
+
+List volumes:
+```powershell
+docker volume ls
+```
+
+**Explanation**: 
+- Docker Compose creates a custom bridge network for service communication
+- Named volumes persist data even when containers are removed
+- Volumes: `db_data` (MySQL data), `traefik-certs` (SSL certificates)
+
+**Screenshot placeholder**: [Insert screenshot of docker network and volume listings]
+
+---
+
+### Step 10: Scale Web Servers (Optional)
+
+Scale to a different number of replicas:
+```powershell
+docker compose up -d --scale contapa2-m1-dm=5
+```
+
+**Explanation**: Changes the number of web server instances. Traefik automatically detects new containers and adds them to the load balancer.
+
+**Screenshot placeholder**: [Insert screenshot of scaled containers]
+
+---
 
 ## Service Descriptions
 
@@ -387,12 +428,12 @@ start_period: 5s  # Grace period before starting checks
 **Purpose**: Apache web server with PHP-FPM serving the application.
 
 **Ports Exposed:**
-- `8085-8095:80`: Maps host ports 8085-8095 to container port 80 for 3 replicas
+- `8085-8087:80`: Maps host ports 8085, 8086, 8087 to container port 80 for 3 replicas
 
 **Deployment:**
 ```yaml
 deploy:
-  replicas: 3  # Run 3 instances (by default) of this service
+  replicas: 3  # Run 3 instances of this service
 ```
 
 **Explanation**: Docker Compose will start 3 containers from this service definition. Each gets a unique name (contapa2-m1-dm-1, contapa2-m1-dm-2, contapa2-m1-dm-3).
@@ -405,6 +446,7 @@ deploy:
 | `MYSQL_DATABASE` | Database name | From `.env` file |
 | `MYSQL_USER` | Database username | From `.env` file |
 | `MYSQL_PASSWORD` | Database password | From `.env` file |
+| `COMPOSE_PROJECT_NAME` | Project namespace | Hardcoded: `milestone1` |
 
 **Volumes:**
 - `./webserver/www:/var/www/html`: Bind mount for live code updates (development)
@@ -414,7 +456,7 @@ deploy:
 | Label | Explanation |
 |-------|-------------|
 | `traefik.enable=true` | Enable Traefik routing for this service |
-| ``traefik.http.routers.web.rule=Host(`${DOMAIN}`)``| Route requests matching this domain |
+| `traefik.http.routers.web.rule=Host(\`${DOMAIN}\`)` | Route requests matching this domain |
 | `traefik.http.routers.web.entrypoints=websecure` | Use HTTPS entry point |
 | `traefik.http.routers.web.tls.certresolver=letsencrypt` | Use Let's Encrypt for SSL |
 | `traefik.http.services.web.loadbalancer.server.port=80` | Backend container port |
@@ -494,7 +536,7 @@ start_period: 30s  # Wait 30s before starting (MySQL needs time to initialize)
 **Container Name**: `phpmyadmin-m1-dm`
 
 **Ports Exposed:**
-- `8081:80`: Access phpMyAdmin at http://localhost:8081
+- `8088:80`: Access phpMyAdmin at http://localhost:8088
 
 **Environment Variables:**
 
@@ -514,7 +556,7 @@ start_period: 30s  # Wait 30s before starting (MySQL needs time to initialize)
 
 Open your browser and navigate to:
 ```
-http://SERVER_IP:8080
+http://localhost:8080
 ```
 
 **What to check:**
@@ -522,7 +564,7 @@ http://SERVER_IP:8080
 - All backend servers are listed
 - Health status is green
 
-**Screenshot**: ![Traefik dashboard](./screenshots/direct-access.png)
+**Screenshot placeholder**: [Insert screenshot of Traefik dashboard]
 
 ---
 
@@ -531,21 +573,44 @@ http://SERVER_IP:8080
 Test direct access to individual web server replicas:
 
 ```
-http://SERVER_IP:assigned_port
-http://SERVER_IP:assigned_port
-http://SERVER_IP:assigned_port
+http://localhost:8085
+http://localhost:8086
+http://localhost:8087
 ```
-
-**Note**: Ports 8085-8095 are available for up to 11 replicas.
 
 **Expected Result:**
 - Page displays "David Maat has reached Milestone 1!!"
 - Shows container hostname (different for each port)
 
-**Screenshot**: ![Traefik dashboard](./screenshots/traefik-dashboard.png)
+**Screenshot placeholder**: [Insert screenshot of web application showing different container hostnames]
 
-### 3. Test Load Balancing
-Access the domain 
+---
+
+### 3. Access Web Application (via Traefik)
+
+**For local testing without a domain:**
+
+Edit your hosts file:
+- Windows: `C:\Windows\System32\drivers\etc\hosts`
+- Linux/Mac: `/etc/hosts`
+
+Add:
+```
+127.0.0.1 yourdomain.com
+```
+
+Then access:
+```
+https://yourdomain.com
+```
+
+**Note**: You'll get a certificate warning with staging certificates - this is expected.
+
+**Screenshot placeholder**: [Insert screenshot of application via HTTPS]
+
+---
+
+### 4. Test Load Balancing
 
 Refresh the page multiple times and observe the "Served by container" hostname changing between:
 - `contapa2-m1-dm-1`
@@ -554,15 +619,15 @@ Refresh the page multiple times and observe the "Served by container" hostname c
 
 **Explanation**: Traefik distributes requests across all healthy backend servers.
 
-**Screenshot**: ![Load balancing in action](./screenshots/lb-in-action.png)
+**Screenshot placeholder**: [Insert screenshot showing different container names on refresh]
 
 ---
 
-### 4. Access phpMyAdmin
+### 5. Access phpMyAdmin
 
 Navigate to:
 ```
-http://SERVER_IP:8081
+http://localhost:8088
 ```
 
 **Login credentials:**
@@ -574,7 +639,471 @@ http://SERVER_IP:8081
 - Database `milestone_db` exists
 - Table `users` contains "David Maat"
 
-**Screenshot**: ![PhpMyAdmin preview](./screenshots/pma-preview.png)
+**Screenshot placeholder**: [Insert screenshot of phpMyAdmin showing database and table]
+
+---
+
+### 6. Verify Container Health
+
+Check all containers are healthy:
+```powershell
+docker compose ps
+```
+
+All services should show:
+- **State**: Up
+- **Health**: healthy
+
+**Screenshot placeholder**: [Insert screenshot of all healthy containers]
+
+---
+
+### 7. Test Database Connectivity
+
+Execute SQL query directly:
+```powershell
+docker compose exec mysql mysql -u milestone_user -p milestone_db -e "SELECT * FROM users;"
+```
+
+**Explanation:**
+- `docker compose exec mysql`: Execute command in MySQL container
+- `mysql -u milestone_user -p`: Connect as application user
+- `milestone_db`: Database name
+- `-e "SELECT * FROM users;"`: Execute query
+
+**Expected Output:**
+```
++----+-------------+
+| id | name        |
++----+-------------+
+|  1 | David Maat  |
++----+-------------+
+```
+
+**Screenshot placeholder**: [Insert screenshot of SQL query output]
+
+---
+
+### 8. Test Container Recovery
+
+Stop one web server container:
+```powershell
+docker stop milestone1-contapa2-m1-dm-1
+```
+
+Observe:
+- Container automatically restarts (no restart policy set, so it won't restart)
+- Load balancer continues serving from remaining containers
+- Traefik removes unhealthy container from rotation
+
+Check status:
+```powershell
+docker compose ps
+```
+
+**Screenshot placeholder**: [Insert screenshot showing recovery]
+
+---
+
+### 9. View Resource Usage
+
+Monitor CPU and memory usage:
+```powershell
+docker stats
+```
+
+**Columns explained:**
+- `CONTAINER ID`: Unique container identifier
+- `CPU %`: Percentage of host CPU used
+- `MEM USAGE / LIMIT`: Current memory / maximum allowed
+- `MEM %`: Percentage of available memory used
+- `NET I/O`: Network bytes sent/received
+- `BLOCK I/O`: Disk bytes read/written
+
+**Screenshot placeholder**: [Insert screenshot of docker stats]
+
+---
+
+## Troubleshooting
+
+### Issue: Containers fail to start
+
+**Symptoms**: Services exit immediately after starting
+
+**Diagnosis:**
+```powershell
+docker compose logs
+```
+
+**Common Causes:**
+1. **Port conflicts**: Another service using ports 80, 443, 8080, 8085-8088
+   - **Solution**: Stop conflicting services or change ports in `docker-compose.yml`
+
+2. **Missing environment variables**: `.env` file not found or incomplete
+   - **Solution**: Verify `.env` file exists and contains all required variables
+
+3. **MySQL initialization failure**
+   - **Solution**: Check MySQL logs: `docker compose logs mysql`
+
+---
+
+### Issue: Cannot access web application
+
+**Symptoms**: Browser shows "connection refused" or "site cannot be reached"
+
+**Diagnosis:**
+```powershell
+# Check if containers are running
+docker compose ps
+
+# Check if ports are listening
+netstat -an | findstr "8085 8086 8087"
+
+# Check container logs
+docker compose logs contapa2-m1-dm
+```
+
+**Common Causes:**
+1. **Containers not healthy**: Wait for health checks to pass
+2. **Firewall blocking ports**: Configure Windows Firewall to allow ports
+3. **Wrong URL**: Ensure using correct localhost or domain
+
+---
+
+### Issue: SSL certificate errors
+
+**Symptoms**: Browser shows "Your connection is not private" or similar
+
+**Expected Behavior:**
+- **Staging certificates**: Will show warnings (expected during testing)
+- **Production certificates**: Should be trusted after DNS propagation
+
+**Solutions:**
+1. **For testing**: Accept the certificate warning (staging certs are not trusted)
+2. **For production**: 
+   - Ensure DNS points to your server
+   - Change `ACME_SERVER` to production URL
+   - Restart stack: `docker compose down && docker compose up -d`
+
+---
+
+### Issue: Database connection errors in application
+
+**Symptoms**: Web page shows "Connection failed"
+
+**Diagnosis:**
+```powershell
+# Check MySQL health
+docker compose ps mysql
+
+# Test database connectivity
+docker compose exec mysql mysqladmin ping -u milestone_user -p
+
+# Check if database and user exist
+docker compose exec mysql mysql -u root -p -e "SHOW DATABASES; SELECT User FROM mysql.user;"
+```
+
+**Common Causes:**
+1. **MySQL not ready**: Health check hasn't passed yet
+2. **Wrong credentials**: Verify environment variables match
+3. **Network isolation**: Containers not on same network
+
+---
+
+### Issue: phpMyAdmin cannot connect to database
+
+**Symptoms**: "Cannot connect: invalid settings" error
+
+**Solution:**
+```powershell
+# Restart phpMyAdmin
+docker compose restart phpmyadmin
+
+# Check logs
+docker compose logs phpmyadmin
+```
+
+**Common Causes:**
+- MySQL service name mismatch (should be `mysql`)
+- MySQL not fully initialized
+
+---
+
+### Issue: Load balancing not working
+
+**Symptoms**: Same container serves all requests
+
+**Diagnosis:**
+```powershell
+# Check how many replicas are running
+docker compose ps contapa2-m1-dm
+
+# Check Traefik dashboard
+# Open http://localhost:8080
+```
+
+**Solutions:**
+1. **Verify replicas are running**: Should see 3 containers
+2. **Check Traefik configuration**: All containers should be registered as backends
+3. **Clear browser cache**: Might be caching responses
+
+---
+
+### Issue: Out of disk space
+
+**Symptoms**: Containers fail to start with "no space left on device"
+
+**Diagnosis:**
+```powershell
+# Check Docker disk usage
+docker system df
+
+# Check volume sizes
+docker volume ls
+```
+
+**Solutions:**
+```powershell
+# Remove unused containers, images, volumes
+docker system prune -a --volumes
+
+# WARNING: This removes all unused Docker data!
+```
+
+---
+
+### Issue: Performance is slow
+
+**Diagnosis:**
+```powershell
+# Check resource usage
+docker stats
+
+# Check for bottlenecks
+docker compose logs --tail=100
+```
+
+**Solutions:**
+1. **Increase Docker resources**: Configure in Docker Desktop settings
+2. **Optimize MySQL**: Adjust MySQL configuration
+3. **Scale down**: Reduce number of replicas if system is overloaded
+
+---
+
+## Cleanup
+
+### Stop all services (keep data)
+
+```powershell
+docker compose stop
+```
+
+**Explanation**: Stops containers but preserves data in volumes.
+
+---
+
+### Stop and remove containers
+
+```powershell
+docker compose down
+```
+
+**Explanation**: Stops and removes containers, networks, but keeps volumes.
+
+---
+
+### Remove everything including volumes
+
+```powershell
+docker compose down -v
+```
+
+**Flags explained:**
+- `-v` or `--volumes`: Remove named volumes declared in the volumes section
+
+**WARNING**: This deletes all database data!
+
+---
+
+### Remove everything including images
+
+```powershell
+docker compose down -v --rmi all
+```
+
+**Flags explained:**
+- `--rmi all`: Remove all images used by services
+- `--rmi local`: Remove only images without custom tags
+
+---
+
+### Remove orphaned resources
+
+```powershell
+docker compose down --remove-orphans
+```
+
+**Explanation**: Removes containers for services not defined in current compose file.
+
+---
+
+### Clean up Docker system
+
+```powershell
+# Remove all stopped containers
+docker container prune
+
+# Remove all unused images
+docker image prune -a
+
+# Remove all unused volumes
+docker volume prune
+
+# Remove all unused networks
+docker network prune
+
+# Remove everything unused
+docker system prune -a --volumes
+```
+
+**WARNING**: System prune commands affect ALL Docker resources, not just this project!
+
+---
+
+## Advanced Topics
+
+### Viewing and Managing Volumes
+
+**List volumes:**
+```powershell
+docker volume ls
+```
+
+**Inspect volume details:**
+```powershell
+docker volume inspect milestone1_db_data
+docker volume inspect milestone1_traefik-certs
+```
+
+**Backup database volume:**
+```powershell
+docker run --rm -v milestone1_db_data:/data -v ${PWD}:/backup ubuntu tar czf /backup/db_backup.tar.gz /data
+```
+
+**Restore database volume:**
+```powershell
+docker run --rm -v milestone1_db_data:/data -v ${PWD}:/backup ubuntu tar xzf /backup/db_backup.tar.gz -C /
+```
+
+---
+
+### Viewing Network Configuration
+
+**List networks:**
+```powershell
+docker network ls
+```
+
+**Inspect network:**
+```powershell
+docker network inspect milestone1_default
+```
+
+**What to look for:**
+- All containers attached to the network
+- IP addresses assigned to containers
+- Network driver type (bridge)
+
+---
+
+### Executing Commands in Containers
+
+**Interactive shell in MySQL:**
+```powershell
+docker compose exec mysql bash
+```
+
+**Interactive shell in web server:**
+```powershell
+docker compose exec contapa2-m1-dm bash
+```
+
+**Single command execution:**
+```powershell
+docker compose exec mysql mysql -u root -p -e "SHOW DATABASES;"
+```
+
+---
+
+### Monitoring Logs in Real-Time
+
+**All services:**
+```powershell
+docker compose logs -f
+```
+
+**Specific service:**
+```powershell
+docker compose logs -f traefik
+```
+
+**Multiple services:**
+```powershell
+docker compose logs -f traefik mysql
+```
+
+**With timestamps:**
+```powershell
+docker compose logs -f --timestamps
+```
+
+**Tail last N lines:**
+```powershell
+docker compose logs -f --tail=50 contapa2-m1-dm
+```
+
+---
+
+### Updating the Stack
+
+**Update images to latest versions:**
+```powershell
+docker compose pull
+docker compose up -d
+```
+
+**Rebuild custom images:**
+```powershell
+docker compose build --no-cache
+docker compose up -d
+```
+
+**Force recreate containers:**
+```powershell
+docker compose up -d --force-recreate
+```
+
+---
+
+## Security Considerations
+
+### Production Checklist
+
+- [ ] Change all default passwords in `.env`
+- [ ] Use production ACME server for real SSL certificates
+- [ ] Disable Traefik dashboard (`--api.dashboard=false`)
+- [ ] Enable dashboard authentication if keeping it enabled
+- [ ] Use Docker secrets instead of environment variables for passwords
+- [ ] Implement firewall rules (allow only 80, 443)
+- [ ] Enable Docker Content Trust (image signing)
+- [ ] Regular backups of database volume
+- [ ] Monitor logs for suspicious activity
+- [ ] Keep images updated with security patches
+- [ ] Use read-only root filesystem where possible
+- [ ] Implement rate limiting in Traefik
+- [ ] Add HTTP security headers
+
+---
 
 ## Additional Resources
 
@@ -601,12 +1130,12 @@ http://SERVER_IP:8081
 ## Conclusion
 
 This Docker Compose stack demonstrates a production-ready architecture with:
--  Load balancing across multiple web servers
--  Automatic SSL certificate management
--  Health monitoring and automatic recovery
--  Persistent data storage
--  Service isolation and dependency management
--  Scalability (easily adjust replica count)
+- ✅ Load balancing across multiple web servers
+- ✅ Automatic SSL certificate management
+- ✅ Health monitoring and automatic recovery
+- ✅ Persistent data storage
+- ✅ Service isolation and dependency management
+- ✅ Scalability (easily adjust replica count)
 
 For questions or issues, refer to the troubleshooting section or consult the official documentation linked above.
 
