@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Milestone 1 - Docker Compose Stack Documentation</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css">
+<link href="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <h1 id="milestone-1---docker-compose-stack-documentation">Milestone 1 - Docker Compose Stack Documentation</h1>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#architecture">Architecture</a></li>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#project-structure">Project Structure</a></li>
+<li><a href="#configuration-files">Configuration Files</a></li>
+<li><a href="#environment-variables">Environment Variables</a></li>
+<li><a href="#step-by-step-deployment-guide">Step-by-Step Deployment Guide</a></li>
+<li><a href="#service-descriptions">Service Descriptions</a></li>
+<li><a href="#verification-and-testing">Verification and Testing</a></li>
+</ol>
+<hr>
+<h2 id="overview">Overview</h2>
+<p>This Docker Compose stack creates a scalable web application infrastructure with the following components:</p>
+<ul>
+<li><strong>Traefik</strong>: Reverse proxy with automatic HTTPS/SSL certificate management</li>
+<li><strong>Web Servers (Apache/PHP)</strong>: Three replicas of Apache web servers with PHP-FPM support</li>
+<li><strong>MySQL Database</strong>: Persistent database backend</li>
+<li><strong>phpMyAdmin</strong>: Web-based database administration tool</li>
+</ul>
+<p>The stack demonstrates:</p>
+<ul>
+<li>Load balancing across multiple web server instances</li>
+<li>Automatic SSL certificate provisioning via Let's Encrypt</li>
+<li>Container health monitoring</li>
+<li>Service dependencies and startup ordering</li>
+<li>Persistent data storage</li>
+</ul>
+<hr>
+<h2 id="architecture">Architecture</h2>
+<pre><code>                    Internet
+                       ↓
+                  Traefik (Reverse Proxy)
+                  Port 443 (HTTPS)
+                  Port 80 (HTTP → redirects to HTTPS)
+                  Port 8080 (Dashboard)
+                       ↓
+          ┌────────────┴────────────┐
+          ↓                         ↓
+    Web Servers (×3)          phpMyAdmin
+    Ports 8085-8095           Port 8081
+    (Load Balanced)
+          ↓
+       MySQL Database
+    (Internal Network)
+</code></pre>
+<hr>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>Before deploying this stack, ensure you have:</p>
+<ol>
+<li>
+<p><strong>Docker Engine</strong></p>
+<ul>
+<li>Check version: <code>docker --version</code></li>
+</ul>
+</li>
+<li>
+<p><strong>Docker Compose</strong></p>
+<ul>
+<li>Check version: <code>docker compose version</code></li>
+</ul>
+</li>
+<li>
+<p><strong>Operating System</strong>:</p>
+<ul>
+<li>Linux (recommended for production)</li>
+<li>Windows with WSL2 or Docker Desktop</li>
+<li>macOS with Docker Desktop</li>
+</ul>
+</li>
+<li>
+<p><strong>Domain Name</strong> (for production with real SSL certificates)</p>
+<ul>
+<li>DNS properly configured to point to your server's IP</li>
+</ul>
+</li>
+<li>
+<p><strong>Network Requirements</strong>:</p>
+<ul>
+<li>Ports 80, 443, 8080, 8085-8095, 8081 available</li>
+<li>Internet connection for pulling images and obtaining SSL certificates</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="project-structure">Project Structure</h2>
+<pre><code>Milestone 1/
+├── docker-compose.yml          # Main orchestration file
+├── .env.example                # Copy to .env and fill in for production
+├── webserver/                  # Web server configuration
+│   ├── Dockerfile              # Custom Apache/PHP image
+│   ├── 000-default.conf        # Apache VirtualHost configuration
+│   ├── init.sql                # Database initialization script
+│   └── www/                    # Web application files
+│       └── index.php           # Main application file
+</code></pre>
+<hr>
+<h2 id="configuration-files">Configuration Files</h2>
+<h3 id="docker-composeyml">docker-compose.yml</h3>
+<p>The main orchestration file that defines all services, networks, and volumes.</p>
+<p><strong>Key sections explained:</strong></p>
+<ul>
+<li><code>services</code>: Defines each container/service</li>
+<li><code>volumes</code>: Named volumes for persistent data</li>
+<li><code>depends_on</code>: Service startup dependencies</li>
+<li><code>healthcheck</code>: Container health monitoring</li>
+<li><code>labels</code>: Traefik routing configuration</li>
+</ul>
+<h3 id="dockerfile">Dockerfile</h3>
+<p>Custom image based on Ubuntu 24.04 with:</p>
+<ul>
+<li>Apache web server</li>
+<li>PHP 8.3 with FPM (FastCGI Process Manager)</li>
+<li>MySQL PHP extension</li>
+<li>Security hardening (non-root user)</li>
+</ul>
+<h3 id="000-defaultconf">000-default.conf</h3>
+<p>Apache VirtualHost configuration that:</p>
+<ul>
+<li>Sets up document root at <code>/var/www/html</code></li>
+<li>Configures PHP-FPM integration via Unix socket</li>
+<li>Enables directory permissions</li>
+</ul>
+<h3 id="initsql">init.sql</h3>
+<p>Database initialization script that:</p>
+<ul>
+<li>Creates a <code>users</code> table</li>
+<li>Inserts sample data</li>
+</ul>
+<h3 id="indexphp">index.php</h3>
+<p>PHP application that:</p>
+<ul>
+<li>Connects to MySQL database</li>
+<li>Displays user data</li>
+<li>Shows which container is serving the request (for load balancing verification)</li>
+</ul>
+<hr>
+<h2 id="environment-variables">Environment Variables</h2>
+<p>Copy <code>.env.example</code> to <code>.env</code> in the <code>Milestone 1/</code> directory with the following variables:</p>
+<pre><code class="language-env"># Email for Let's Encrypt notifications
+EMAIL=your-email@example.com
+
+# Domain name for your application
+DOMAIN=yourdomain.com
+
+# ACME Server (use staging for testing)
+# Staging: https://acme-staging-v02.api.letsencrypt.org/directory
+# Production: https://acme-v02.api.letsencrypt.org/directory
+ACME_SERVER=https://acme-staging-v02.api.letsencrypt.org/directory
+
+# MySQL Configuration
+MYSQL_ROOT_PASSWORD=secure_root_password_here
+MYSQL_DATABASE=milestone_db
+MYSQL_USER=milestone_user
+MYSQL_PASSWORD=secure_user_password_here
+</code></pre>
+<p><strong>Parameter Explanations:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>EMAIL</code></td>
+<td>Email address for Let's Encrypt certificate notifications</td>
+<td><code>admin@example.com</code></td>
+</tr>
+<tr>
+<td><code>DOMAIN</code></td>
+<td>Your domain name for the web application</td>
+<td><code>example.com</code> or <code>www.example.com</code></td>
+</tr>
+<tr>
+<td><code>ACME_SERVER</code></td>
+<td>Let's Encrypt API endpoint (staging or production)</td>
+<td>Use staging for testing</td>
+</tr>
+<tr>
+<td><code>MYSQL_ROOT_PASSWORD</code></td>
+<td>MySQL root user password (keep secure!)</td>
+<td>Strong password with special chars</td>
+</tr>
+<tr>
+<td><code>MYSQL_DATABASE</code></td>
+<td>Name of the database to create</td>
+<td><code>milestone_db</code></td>
+</tr>
+<tr>
+<td><code>MYSQL_USER</code></td>
+<td>MySQL user for the application</td>
+<td><code>milestone_user</code></td>
+</tr>
+<tr>
+<td><code>MYSQL_PASSWORD</code></td>
+<td>Password for the MySQL user</td>
+<td>Strong password</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="step-by-step-deployment-guide">Step-by-Step Deployment Guide</h2>
+<h3 id="step-1-clone-or-navigate-to-project-directory">Step 1: Clone or Navigate to Project Directory</h3>
+<pre><code class="language-powershell"><span class="hljs-built_in">cd</span> ~\<span class="hljs-string">&quot;Milestone 1&quot;</span>
+</code></pre>
+<p><strong>Explanation</strong>: Navigate to the directory containing the <code>docker-compose.yml</code> file.</p>
+<hr>
+<h3 id="step-2-create-environment-file">Step 2: Create Environment File</h3>
+<p>Create a <code>.env</code> file with your configuration:</p>
+<pre><code class="language-powershell"><span class="hljs-built_in">cp</span> .env.example .env &amp;&amp; vim .env
+</code></pre>
+<p><strong>Explanation</strong>: This opens vim to create the environment file. Fill in the environment variables from the <a href="#environment-variables">Environment Variables</a> section and save.</p>
+<p><strong>Screenshot</strong>:
+<img src="file:///c:\Users\David\OneDrive - Thomas More\Semester 3\Linux Web Services\git\documentation\screenshots\environment-content.png" alt="Environment file example"></p>
+<hr>
+<h3 id="step-3-validate-docker-compose-configuration">Step 3: Validate Docker Compose Configuration</h3>
+<pre><code class="language-powershell">docker compose config
+</code></pre>
+<p><strong>Explanation</strong>: This command validates the syntax of your <code>docker-compose.yml</code> file and shows the merged configuration with environment variables substituted.</p>
+<p><strong>What to look for:</strong></p>
+<ul>
+<li>No error messages</li>
+<li>Environment variables properly substituted</li>
+<li>All services listed correctly</li>
+</ul>
+<p><strong>Partial screenshot</strong>: <img src="file:///c:\Users\David\OneDrive - Thomas More\Semester 3\Linux Web Services\git\documentation\screenshots\compose-config.png" alt="Compose config partial"></p>
+<hr>
+<h3 id="step-4-pull-required-docker-images">Step 4: Pull Required Docker Images</h3>
+<pre><code class="language-powershell">docker compose pull
+</code></pre>
+<p><strong>Explanation</strong>: Downloads all required Docker images before building. This separates the download process from the build process.</p>
+<p><strong>Images pulled:</strong></p>
+<ul>
+<li><code>traefik:v3.2</code> (Reverse proxy)</li>
+<li><code>mysql:lts</code> (Database)</li>
+<li><code>phpmyadmin:latest</code> (Database admin tool, latest is okay here, since it's not exposed publicly)</li>
+<li><code>ubuntu:24.04</code> (Base image for custom web server)</li>
+</ul>
+<p><strong>Screenshot</strong>: <img src="file:///c:\Users\David\OneDrive - Thomas More\Semester 3\Linux Web Services\git\documentation\screenshots\compose-pull.png" alt="Compose pull"></p>
+<hr>
+<h3 id="step-5-build-custom-images">Step 5: Build Custom Images</h3>
+<pre><code class="language-powershell">docker compose build
+</code></pre>
+<p><strong>Explanation</strong>: Builds the custom web server image defined in <code>webserver/Dockerfile</code>. This includes:</p>
+<ul>
+<li>Installing Apache and PHP</li>
+<li>Configuring PHP-FPM</li>
+<li>Setting up a non-root user for security</li>
+<li>Copying application files</li>
+</ul>
+<p><strong>Parameters in Dockerfile explained:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Instruction</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>FROM ubuntu:24.04@sha256:...</code></td>
+<td>Base image with specific digest for reproducibility</td>
+</tr>
+<tr>
+<td><code>RUN apt update &amp;&amp; apt install...</code></td>
+<td>Install Apache, PHP, and required extensions</td>
+</tr>
+<tr>
+<td><code>RUN useradd -r -u 1001...</code></td>
+<td>Create non-root user for running Apache (security best practice)</td>
+</tr>
+<tr>
+<td><code>COPY ./www /var/www/html</code></td>
+<td>Copy application files into the image</td>
+</tr>
+<tr>
+<td><code>RUN chown -R apacheuser:www-data...</code></td>
+<td>Set proper file permissions</td>
+</tr>
+<tr>
+<td><code>EXPOSE 80</code></td>
+<td>Document that container listens on port 80</td>
+</tr>
+<tr>
+<td><code>CMD [&quot;/start.sh&quot;]</code></td>
+<td>Default command to run when container starts</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Screenshot</strong>: <img src="file:///c:\Users\David\OneDrive - Thomas More\Semester 3\Linux Web Services\git\documentation\screenshots\compose-build.png" alt="Compose builc"></p>
+<hr>
+<h3 id="step-6-start-the-stack">Step 6: Start the Stack</h3>
+<pre><code class="language-powershell">docker compose up <span class="hljs-literal">-d</span>
+</code></pre>
+<p><strong>Explanation</strong>: Starts all services in detached mode (runs in background).</p>
+<p><strong>Flags explained:</strong></p>
+<ul>
+<li><code>-d</code> or <code>--detach</code>: Run containers in the background</li>
+</ul>
+<p><strong>What happens:</strong></p>
+<ol>
+<li>Creates a custom Docker network for the services</li>
+<li>Creates named volumes for persistent data</li>
+<li>Starts MySQL container first (dependency)</li>
+<li>Waits for MySQL health check to pass</li>
+<li>Starts web server containers (3 replicas)</li>
+<li>Starts phpMyAdmin</li>
+<li>Starts Traefik reverse proxy</li>
+</ol>
+<p><strong>Screenshot</strong>: <img src="file:///c:\Users\David\OneDrive - Thomas More\Semester 3\Linux Web Services\git\documentation\screenshots\compose-up-d.png" alt="Compose up -d"></p>
+<hr>
+<h3 id="step-7-monitor-container-status">Step 7: Monitor Container Status</h3>
+<pre><code class="language-powershell">docker compose <span class="hljs-built_in">ps</span>
+</code></pre>
+<p><strong>Explanation</strong>: Shows the status of all containers in the stack.</p>
+<p><strong>Status indicators:</strong></p>
+<ul>
+<li><code>Up (healthy)</code>: Container is running and passed health checks</li>
+<li><code>Up (health: starting)</code>: Container is running but health check hasn't passed yet</li>
+<li><code>Exit</code>: Container has stopped</li>
+</ul>
+<p><strong>Screenshot</strong>: <img src="file:///c:\Users\David\OneDrive - Thomas More\Semester 3\Linux Web Services\git\documentation\screenshots\compose-ps.png" alt="Compose ps"></p>
+<hr>
+<h3 id="step-8-view-container-logs">Step 8: View Container Logs</h3>
+<p>Check logs for all services:</p>
+<pre><code class="language-powershell">docker compose logs
+</code></pre>
+<p>Check logs for a specific service:</p>
+<pre><code class="language-powershell">docker compose logs traefik
+</code></pre>
+<p>Follow logs in real-time:</p>
+<pre><code class="language-powershell">docker compose logs <span class="hljs-operator">-f</span> contapa2<span class="hljs-literal">-m1-dm</span>
+</code></pre>
+<p><strong>Flags explained:</strong></p>
+<ul>
+<li><code>-f</code> or <code>--follow</code>: Stream logs in real-time (like <code>tail -f</code>)</li>
+<li><code>--tail=100</code>: Show only last 100 lines</li>
+<li><code>--timestamps</code>: Add timestamps to log entries</li>
+</ul>
+<p><strong>Screenshot</strong>: <img src="file:///c:\Users\David\OneDrive - Thomas More\Semester 3\Linux Web Services\git\documentation\screenshots\compose-logs.png" alt="Compose logs"></p>
+<h2 id="service-descriptions">Service Descriptions</h2>
+<h3 id="1-traefik-reverse-proxy">1. Traefik (Reverse Proxy)</h3>
+<p><strong>Image</strong>: <code>traefik:v3.2</code></p>
+<p><strong>Purpose</strong>: Acts as a reverse proxy and load balancer with automatic HTTPS certificate management.</p>
+<p><strong>Ports Exposed:</strong></p>
+<ul>
+<li><code>80</code>: HTTP entry point (redirects to HTTPS)</li>
+<li><code>443</code>: HTTPS entry point</li>
+<li><code>8080</code>: Traefik dashboard (insecure mode for development)</li>
+</ul>
+<p><strong>Command-line Parameters Explained:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--api.dashboard=true</code></td>
+<td>Enable the Traefik web dashboard</td>
+</tr>
+<tr>
+<td><code>--api.insecure=true</code></td>
+<td>Allow dashboard access without authentication (dev only)</td>
+</tr>
+<tr>
+<td><code>--ping=true</code></td>
+<td>Enable ping endpoint for health checks</td>
+</tr>
+<tr>
+<td><code>--entrypoints.web.address=:80</code></td>
+<td>Create HTTP entry point on port 80</td>
+</tr>
+<tr>
+<td><code>--entrypoints.web.http.redirections.entrypoint.to=websecure</code></td>
+<td>Redirect HTTP to HTTPS</td>
+</tr>
+<tr>
+<td><code>--entrypoints.web.http.redirections.entrypoint.scheme=https</code></td>
+<td>Use HTTPS scheme for redirects</td>
+</tr>
+<tr>
+<td><code>--entrypoints.web.http.redirections.entrypoint.permanent=true</code></td>
+<td>Use HTTP 301 (permanent redirect)</td>
+</tr>
+<tr>
+<td><code>--entrypoints.websecure.address=:443</code></td>
+<td>Create HTTPS entry point on port 443</td>
+</tr>
+<tr>
+<td><code>--certificatesresolvers.letsencrypt.acme.email=${EMAIL}</code></td>
+<td>Email for Let's Encrypt notifications</td>
+</tr>
+<tr>
+<td><code>--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json</code></td>
+<td>Where to store certificates</td>
+</tr>
+<tr>
+<td><code>--certificatesresolvers.letsencrypt.acme.caserver=${ACME_SERVER}</code></td>
+<td>Let's Encrypt server (staging/prod)</td>
+</tr>
+<tr>
+<td><code>--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web</code></td>
+<td>Use HTTP-01 challenge on port 80</td>
+</tr>
+<tr>
+<td><code>--providers.docker=true</code></td>
+<td>Enable Docker provider</td>
+</tr>
+<tr>
+<td><code>--providers.docker.endpoint=unix:///var/run/docker.sock</code></td>
+<td>Docker socket location</td>
+</tr>
+<tr>
+<td><code>--providers.docker.exposedbydefault=false</code></td>
+<td>Require explicit <code>traefik.enable=true</code> label</td>
+</tr>
+<tr>
+<td><code>--log.level=INFO</code></td>
+<td>Set logging verbosity</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Volumes:</strong></p>
+<ul>
+<li><code>/var/run/docker.sock:/var/run/docker.sock:ro</code>: Docker socket (read-only) for service discovery</li>
+<li><code>traefik-certs:/letsencrypt</code>: Persistent storage for SSL certificates</li>
+</ul>
+<p><strong>Health Check:</strong></p>
+<pre><code class="language-yaml"><span class="hljs-attr">test:</span> [<span class="hljs-string">&quot;CMD&quot;</span>, <span class="hljs-string">&quot;traefik&quot;</span>, <span class="hljs-string">&quot;healthcheck&quot;</span>, <span class="hljs-string">&quot;--ping&quot;</span>]
+<span class="hljs-attr">interval:</span> <span class="hljs-string">5s</span>      <span class="hljs-comment"># Check every 5 seconds</span>
+<span class="hljs-attr">timeout:</span> <span class="hljs-string">3s</span>       <span class="hljs-comment"># Fail if check takes &gt; 3 seconds</span>
+<span class="hljs-attr">retries:</span> <span class="hljs-number">3</span>        <span class="hljs-comment"># Retry 3 times before marking unhealthy</span>
+<span class="hljs-attr">start_period:</span> <span class="hljs-string">5s</span>  <span class="hljs-comment"># Grace period before starting checks</span>
+</code></pre>
+<p><strong>Dependencies:</strong></p>
+<ul>
+<li>Depends on <code>contapa2-m1-dm</code> being healthy before starting</li>
+</ul>
+<hr>
+<h3 id="2-web-server-contapa2-m1-dm">2. Web Server (contapa2-m1-dm)</h3>
+<p><strong>Build Context</strong>: <code>./webserver/Dockerfile</code></p>
+<p><strong>Purpose</strong>: Apache web server with PHP-FPM serving the application.</p>
+<p><strong>Ports Exposed:</strong></p>
+<ul>
+<li><code>8085-8095:80</code>: Maps host ports 8085-8095 to container port 80 for 3 replicas</li>
+</ul>
+<p><strong>Deployment:</strong></p>
+<pre><code class="language-yaml"><span class="hljs-attr">deploy:</span>
+  <span class="hljs-attr">replicas:</span> <span class="hljs-number">3</span>  <span class="hljs-comment"># Run 3 instances (by default) of this service</span>
+</code></pre>
+<p><strong>Explanation</strong>: Docker Compose will start 3 containers from this service definition. Each gets a unique name (contapa2-m1-dm-1, contapa2-m1-dm-2, contapa2-m1-dm-3).</p>
+<p><strong>Environment Variables:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Purpose</th>
+<th>Value Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MYSQL_HOST</code></td>
+<td>Database hostname</td>
+<td>Hardcoded: <code>contsql-m1-dm</code></td>
+</tr>
+<tr>
+<td><code>MYSQL_DATABASE</code></td>
+<td>Database name</td>
+<td>From <code>.env</code> file</td>
+</tr>
+<tr>
+<td><code>MYSQL_USER</code></td>
+<td>Database username</td>
+<td>From <code>.env</code> file</td>
+</tr>
+<tr>
+<td><code>MYSQL_PASSWORD</code></td>
+<td>Database password</td>
+<td>From <code>.env</code> file</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Volumes:</strong></p>
+<ul>
+<li><code>./webserver/www:/var/www/html</code>: Bind mount for live code updates (development)</li>
+</ul>
+<p><strong>Traefik Labels:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Label</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>traefik.enable=true</code></td>
+<td>Enable Traefik routing for this service</td>
+</tr>
+<tr>
+<td><code>traefik.http.routers.web.rule=Host(`${DOMAIN}`)</code></td>
+<td>Route requests matching this domain</td>
+</tr>
+<tr>
+<td><code>traefik.http.routers.web.entrypoints=websecure</code></td>
+<td>Use HTTPS entry point</td>
+</tr>
+<tr>
+<td><code>traefik.http.routers.web.tls.certresolver=letsencrypt</code></td>
+<td>Use Let's Encrypt for SSL</td>
+</tr>
+<tr>
+<td><code>traefik.http.services.web.loadbalancer.server.port=80</code></td>
+<td>Backend container port</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Health Check:</strong></p>
+<pre><code class="language-yaml"><span class="hljs-attr">test:</span> [<span class="hljs-string">&quot;CMD&quot;</span>, <span class="hljs-string">&quot;curl&quot;</span>, <span class="hljs-string">&quot;-f&quot;</span>, <span class="hljs-string">&quot;-s&quot;</span>, <span class="hljs-string">&quot;http://localhost/&quot;</span>]
+<span class="hljs-attr">interval:</span> <span class="hljs-string">30s</span>     <span class="hljs-comment"># Check every 30 seconds</span>
+<span class="hljs-attr">timeout:</span> <span class="hljs-string">10s</span>      <span class="hljs-comment"># Fail if check takes &gt; 10 seconds</span>
+<span class="hljs-attr">retries:</span> <span class="hljs-number">3</span>        <span class="hljs-comment"># Retry 3 times before marking unhealthy</span>
+<span class="hljs-attr">start_period:</span> <span class="hljs-string">10s</span> <span class="hljs-comment"># Wait 10s before starting checks</span>
+</code></pre>
+<p><strong>Explanation</strong>: Uses <code>curl</code> to test if the web server responds on port 80.</p>
+<p><strong>Dependencies:</strong></p>
+<ul>
+<li>Depends on <code>mysql</code> being healthy before starting</li>
+</ul>
+<hr>
+<h3 id="3-mysql-database">3. MySQL Database</h3>
+<p><strong>Image</strong>: <code>mysql:lts@sha256:5367102acfefeaa47eb0eb57c8d4f8b96c8c14004859131eac9bbfaa62f81e34</code></p>
+<p><strong>Purpose</strong>: Persistent relational database backend.</p>
+<p><strong>Image Digest Explanation:</strong></p>
+<ul>
+<li>Using <code>@sha256:...</code> pins the exact image version for reproducibility</li>
+<li><code>lts</code> tag points to Long Term Support version of MySQL</li>
+</ul>
+<p><strong>Container Name</strong>: <code>contsql-m1-dm</code></p>
+<p><strong>Restart Policy</strong>: <code>always</code> - Container restarts automatically if it stops</p>
+<p><strong>Environment Variables:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MYSQL_ROOT_PASSWORD</code></td>
+<td>Password for MySQL root user</td>
+</tr>
+<tr>
+<td><code>MYSQL_DATABASE</code></td>
+<td>Database to create on initialization</td>
+</tr>
+<tr>
+<td><code>MYSQL_USER</code></td>
+<td>Non-root user to create</td>
+</tr>
+<tr>
+<td><code>MYSQL_PASSWORD</code></td>
+<td>Password for the non-root user</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Health Check:</strong></p>
+<pre><code class="language-yaml"><span class="hljs-attr">test:</span> [<span class="hljs-string">&quot;CMD-SHELL&quot;</span>, <span class="hljs-string">&quot;mysqladmin ping -h localhost -u${MYSQL_USER} -p${MYSQL_ROOT_PASSWORD} || exit 1&quot;</span>]
+<span class="hljs-attr">interval:</span> <span class="hljs-string">10s</span>      <span class="hljs-comment"># Check every 10 seconds</span>
+<span class="hljs-attr">timeout:</span> <span class="hljs-string">5s</span>        <span class="hljs-comment"># Fail if check takes &gt; 5 seconds</span>
+<span class="hljs-attr">retries:</span> <span class="hljs-number">5</span>         <span class="hljs-comment"># Retry 5 times before marking unhealthy</span>
+<span class="hljs-attr">start_period:</span> <span class="hljs-string">30s</span>  <span class="hljs-comment"># Wait 30s before starting (MySQL needs time to initialize)</span>
+</code></pre>
+<p><strong>Explanation</strong>: Uses <code>mysqladmin ping</code> to verify MySQL is accepting connections.</p>
+<p><strong>Volumes:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Volume</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>db_data:/var/lib/mysql</code></td>
+<td>Persistent storage for database files</td>
+</tr>
+<tr>
+<td><code>./webserver/init.sql:/docker-entrypoint-initdb.d/init.sql</code></td>
+<td>Initialization script</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Initialization Process:</strong></p>
+<ol>
+<li>MySQL container starts</li>
+<li>Creates database specified in <code>MYSQL_DATABASE</code></li>
+<li>Creates user specified in <code>MYSQL_USER</code></li>
+<li>Runs all <code>.sql</code> files in <code>/docker-entrypoint-initdb.d/</code></li>
+<li>Sets root password</li>
+</ol>
+<hr>
+<h3 id="4-phpmyadmin">4. phpMyAdmin</h3>
+<p><strong>Image</strong>: <code>phpmyadmin:latest</code></p>
+<p><strong>Purpose</strong>: Web-based database administration interface.</p>
+<p><strong>Container Name</strong>: <code>phpmyadmin-m1-dm</code></p>
+<p><strong>Ports Exposed:</strong></p>
+<ul>
+<li><code>8081:80</code>: Access phpMyAdmin at <a href="http://localhost:8081">http://localhost:8081</a></li>
+</ul>
+<p><strong>Environment Variables:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Value</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PMA_HOST</code></td>
+<td><code>mysql</code></td>
+<td>Hostname of MySQL server to connect to</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Explanation</strong>: <code>PMA_HOST</code> uses Docker's internal DNS to resolve the MySQL service name to its IP address.</p>
+<p><strong>Restart Policy</strong>: <code>always</code> - Ensures phpMyAdmin is always available</p>
+<hr>
+<h2 id="verification-and-testing">Verification and Testing</h2>
+<h3 id="1-access-traefik-dashboard">1. Access Traefik Dashboard</h3>
+<p>Open your browser and navigate to:</p>
+<pre><code>http://SERVER_IP:8080
+</code></pre>
+<p><strong>What to check:</strong></p>
+<ul>
+<li>HTTP routers are configured</li>
+<li>All backend servers are listed</li>
+<li>Health status is green</li>
+</ul>
+<p><strong>Screenshot</strong>: <img src="file:///c:\Users\David\OneDrive - Thomas More\Semester 3\Linux Web Services\git\documentation\screenshots\direct-access.png" alt="Traefik dashboard"></p>
+<hr>
+<h3 id="2-access-web-application-local">2. Access Web Application (Local)</h3>
+<p>Test direct access to individual web server replicas:</p>
+<pre><code>http://SERVER_IP:assigned_port
+http://SERVER_IP:assigned_port
+http://SERVER_IP:assigned_port
+</code></pre>
+<p><strong>Note</strong>: Ports 8085-8095 are available for up to 11 replicas.</p>
+<p><strong>Expected Result:</strong></p>
+<ul>
+<li>Page displays &quot;David Maat has reached Milestone 1!!&quot;</li>
+<li>Shows container hostname (different for each port)</li>
+</ul>
+<p><strong>Screenshot</strong>: <img src="file:///c:\Users\David\OneDrive - Thomas More\Semester 3\Linux Web Services\git\documentation\screenshots\traefik-dashboard.png" alt="Traefik dashboard"></p>
+<h3 id="3-test-load-balancing">3. Test Load Balancing</h3>
+<p>Access the domain</p>
+<p>Refresh the page multiple times and observe the &quot;Served by container&quot; hostname changing between:</p>
+<ul>
+<li><code>contapa2-m1-dm-1</code></li>
+<li><code>contapa2-m1-dm-2</code></li>
+<li><code>contapa2-m1-dm-3</code></li>
+</ul>
+<p><strong>Explanation</strong>: Traefik distributes requests across all healthy backend servers.</p>
+<p><strong>Screenshot</strong>: <img src="file:///c:\Users\David\OneDrive - Thomas More\Semester 3\Linux Web Services\git\documentation\screenshots\lb-in-action.png" alt="Load balancing in action"></p>
+<hr>
+<h3 id="4-access-phpmyadmin">4. Access phpMyAdmin</h3>
+<p>Navigate to:</p>
+<pre><code>http://SERVER_IP:8081
+</code></pre>
+<p><strong>Login credentials:</strong></p>
+<ul>
+<li><strong>Server</strong>: <code>contsql-m1-dm</code></li>
+<li><strong>Username</strong>: Value from <code>MYSQL_USER</code> in .env</li>
+<li><strong>Password</strong>: Value from <code>MYSQL_PASSWORD</code> in .env</li>
+</ul>
+<p><strong>What to check:</strong></p>
+<ul>
+<li>Database <code>milestone_db</code> exists</li>
+<li>Table <code>users</code> contains &quot;David Maat&quot;</li>
+</ul>
+<p><strong>Screenshot</strong>: <img src="file:///c:\Users\David\OneDrive - Thomas More\Semester 3\Linux Web Services\git\documentation\screenshots\pma-preview.png" alt="PhpMyAdmin preview"></p>
+<h2 id="additional-resources">Additional Resources</h2>
+<h3 id="docker-documentation">Docker Documentation</h3>
+<ul>
+<li><a href="https://docs.docker.com/compose/compose-file/">Docker Compose Reference</a></li>
+<li><a href="https://docs.docker.com/network/">Docker Networking</a></li>
+<li><a href="https://docs.docker.com/storage/volumes/">Docker Volumes</a></li>
+</ul>
+<h3 id="traefik-documentation">Traefik Documentation</h3>
+<ul>
+<li><a href="https://doc.traefik.io/traefik/">Traefik Official Docs</a></li>
+<li><a href="https://doc.traefik.io/traefik/https/acme/">Let's Encrypt Integration</a></li>
+<li><a href="https://doc.traefik.io/traefik/providers/docker/">Docker Provider</a></li>
+</ul>
+<h3 id="mysql-documentation">MySQL Documentation</h3>
+<ul>
+<li><a href="https://hub.docker.com/_/mysql">MySQL Docker Image</a></li>
+<li><a href="https://dev.mysql.com/doc/">MySQL Configuration</a></li>
+</ul>
+<h3 id="php-documentation">PHP Documentation</h3>
+<ul>
+<li><a href="https://www.php.net/manual/en/install.fpm.php">PHP-FPM Configuration</a></li>
+<li><a href="https://www.php.net/manual/en/book.mysqli.php">PHP MySQL Extension</a></li>
+</ul>
+<hr>
+<h2 id="conclusion">Conclusion</h2>
+<p>This Docker Compose stack demonstrates a production-ready architecture with:</p>
+<ul>
+<li>Load balancing across multiple web servers</li>
+<li>Automatic SSL certificate management</li>
+<li>Health monitoring and automatic recovery</li>
+<li>Persistent data storage</li>
+<li>Service isolation and dependency management</li>
+<li>Scalability (easily adjust replica count)</li>
+</ul>
+<p>For questions or issues, refer to the troubleshooting section or consult the official documentation linked above.</p>
+<hr>
+<p><strong>Document Version</strong>: 1.0<br>
+<strong>Last Updated</strong>: October 26, 2025<br>
+<strong>Author</strong>: David Maat<br>
+<strong>Project</strong>: Linux Web Services - Milestone 1</p>
+<hr>
+<h2 id="link-to-proof">Link to proof</h2>
+<p><a href="https://youtu.be/K4Ahl6TJ738">https://youtu.be/K4Ahl6TJ738</a></p>
+
+            <script async src="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.js"></script>
+            
+        </body>
+        </html>
