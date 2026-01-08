@@ -19,12 +19,12 @@ jobs:
       matrix:
         include:
           - name: frontend
-            context: ./frontend
-            dockerfile: ./frontend/Dockerfile
+            context: ./Milestone 2/frontend
+            dockerfile: ./Milestone 2/frontend/Dockerfile
             image: linux-web-services-frontend
           - name: backend
-            context: ./backend
-            dockerfile: ./backend/Dockerfile
+            context: ./Milestone 2/backend
+            dockerfile: ./Milestone 2/backend/Dockerfile
             image: linux-web-services-backend
     steps:
       - name: Checkout
