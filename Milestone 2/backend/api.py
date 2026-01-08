@@ -4,7 +4,7 @@ import database
 
 router = APIRouter()
 
-@router.get("/name")
+@router.get("/user")
 def get_name():
   sql = "SELECT name FROM info"
   result = database.execute_sql_query(sql)

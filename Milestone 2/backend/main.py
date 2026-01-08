@@ -3,7 +3,7 @@ import api
 
 app = FastAPI()
 
-app.include_router(router=api.router, prefix="/api")
+app.include_router(router=api.router, prefix="/")
 
 @app.get("/health")
 def health_check():
