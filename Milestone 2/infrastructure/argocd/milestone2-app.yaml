@@ -15,7 +15,7 @@ spec:
   source:
     repoURL: https://github.com/david-maat/linux-web-services
     targetRevision: main
-    path: infrastructure/dm-milestone2-chart
+    path: "Milestone 2/infrastructure/dm-milestone2-chart"
     helm:
       valueFiles:
         - values.yaml
