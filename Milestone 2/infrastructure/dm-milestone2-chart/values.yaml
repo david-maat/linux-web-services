@@ -146,6 +146,121 @@ securityContext:
 # Frontend configuration
 frontend:
   image:
+    repository: ghcr.io/david-maat/linux-web-services-frontend
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 80
+  resources: {}
+  livenessProbe:
+    httpGet:
+      path: /
+      port: http
+  readinessProbe:
+    httpGet:
+      path: /
+      port: http
+
+# Backend configuration
+backend:
+  image:
+    repository: ghcr.io/david-maat/linux-web-services-backend
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 8000
+  env:
+    DB_CONNECTION: postgresql://postgres:postgres@{{ .Release.Name }}-postgres:5432/postgres
+  resources: {}
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: http
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: http
+
+# Postgres configuration (ephemeral unless persistence enabled)
+postgres:
+  image:
+    repository: postgres
+    tag: 15-alpine
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 5432
+  env:
+    POSTGRES_DB: postgres
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
+  resources: {}
+  persistence:
+    enabled: false
+    size: 1Gi
+
+# Shared ingress routing
+ingress:
+  enabled: true
+  className: "public"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-production"
+  hosts:
+    - host: milestone2.davidmaat.be
+      paths:
+        - path: /
+          pathType: Prefix
+          service: frontend
+          port: 80
+        - path: /user
+          pathType: Prefix
+          service: backend
+          port: 8000
+  tls:
+    - secretName: milestone2-letsencrypt
+      hosts:
+        - milestone2.davidmaat.be
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+# Default values for dm-milestone2-chart.
+# Multi-component release: frontend, backend, postgres, and shared ingress.
+
+singleApp:
+  # Enable to deploy the original single deployment template (disabled for multi-component).
+  enabled: false
+
+replicaCount: 1
+
+# Global image pull secrets
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# Service account configuration
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  {}
+
+securityContext:
+  {}
+
+# Frontend configuration
+frontend:
+  image:
     repository: milestone2-frontend
     tag: latest
     pullPolicy: IfNotPresent
