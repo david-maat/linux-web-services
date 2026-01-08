@@ -261,7 +261,7 @@ securityContext:
 # Frontend configuration
 frontend:
   image:
-    repository: milestone2-frontend
+    repository: ghcr.io/david-maat/linux-web-services-frontend
     tag: latest
     pullPolicy: IfNotPresent
   service:
@@ -280,7 +280,7 @@ frontend:
 # Backend configuration
 backend:
   image:
-    repository: milestone2-backend
+    repository: ghcr.io/david-maat/linux-web-services-backend
     tag: latest
     pullPolicy: IfNotPresent
   service:
