@@ -399,23 +399,6 @@ service:
   # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
   port: 80
 
-# This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
-ingress:
-  enabled: true
-  # MicroK8s ingress class defaults to "public" (nginx controller); adjust if customized.
-  className: "public"
-  annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-production"
-  hosts:
-    - host: milestone2.davidmaat.be
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-  tls:
-    - secretName: milestone2-letsencrypt
-      hosts:
-        - milestone2.davidmaat.be
-
 # -- Expose the service via gateway-api HTTPRoute
 # Requires Gateway API resources and suitable controller installed within the cluster
 # (see: https://gateway-api.sigs.k8s.io/guides/)
