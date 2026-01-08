@@ -33,7 +33,7 @@ frontend:
   image:
     repository: ghcr.io/david-maat/linux-web-services-frontend
     tag: latest
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
   service:
     type: ClusterIP
     port: 80
@@ -52,7 +52,7 @@ backend:
   image:
     repository: ghcr.io/david-maat/linux-web-services-backend
     tag: latest
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
   service:
     type: ClusterIP
     port: 8000
@@ -148,7 +148,7 @@ frontend:
   image:
     repository: ghcr.io/david-maat/linux-web-services-frontend
     tag: latest
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
   service:
     type: ClusterIP
     port: 80
@@ -167,7 +167,7 @@ backend:
   image:
     repository: ghcr.io/david-maat/linux-web-services-backend
     tag: latest
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
   service:
     type: ClusterIP
     port: 8000
