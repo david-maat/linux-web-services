@@ -51,7 +51,7 @@ frontend:
 backend:
   image:
     repository: ghcr.io/david-maat/linux-web-services-backend
-    tag: latest@a313bc84e0206535682a8ad3311817bffbf5e32f
+    tag: a313bc84e0206535682a8ad3311817bffbf5e32f
     pullPolicy: Always
   service:
     type: ClusterIP
