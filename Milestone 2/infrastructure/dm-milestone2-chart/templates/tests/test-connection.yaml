@@ -11,5 +11,5 @@ spec:
     - name: wget
       image: busybox
       command: ['wget']
-      args: ['{{ include "dm-milestone2-chart.fullname" . }}:{{ .Values.service.port }}']
+      args: ['{{ include "dm-milestone2-chart.fullname" . }}-frontend:{{ .Values.frontend.service.port }}']
   restartPolicy: Never
