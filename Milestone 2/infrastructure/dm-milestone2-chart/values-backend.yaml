@@ -1,0 +1,24 @@
+nameOverride: backend
+fullnameOverride: milestone2-backend
+
+image:
+  repository: milestone2-backend
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8000
+
+ingress:
+  enabled: false
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: http
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: http

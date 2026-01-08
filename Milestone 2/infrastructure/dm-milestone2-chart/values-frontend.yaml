@@ -1,0 +1,36 @@
+nameOverride: frontend
+fullnameOverride: milestone2-frontend
+
+image:
+  repository: milestone2-frontend
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: "public"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-production"
+  hosts:
+    - host: milestone2.davidmaat.be
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls:
+    - secretName: milestone2-letsencrypt
+      hosts:
+        - milestone2.davidmaat.be
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
