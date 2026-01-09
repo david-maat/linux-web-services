@@ -64,6 +64,19 @@ backend:
       path: /health
       port: http
 
+# pgAdmin configuration
+pgadmin:
+  image:
+    repository: dpage/pgadmin4
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 80
+  adminEmail: admin@example.com
+  adminPassword: admin
+  resources: {}
+
 # Postgres configuration (ephemeral unless persistence enabled)
 postgres:
   image:
@@ -98,6 +111,10 @@ ingress:
           pathType: Prefix
           service: backend
           port: 8000
+        - path: /admin
+          pathType: Prefix
+          service: pgadmin
+          port: 80
   tls:
     - secretName: milestone2-letsencrypt
       hosts:
