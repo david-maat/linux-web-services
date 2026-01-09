@@ -32,7 +32,3 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
-  hooks:
-    - hookType: PreSync
-      hookPath: ""
-      hookCommand: ["sleep", "30"]
