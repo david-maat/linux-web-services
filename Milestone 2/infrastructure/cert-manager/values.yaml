@@ -33,7 +33,7 @@ global:
 
   # The number of old ReplicaSets to retain to allow rollback (if not set, the default Kubernetes value is set to 10).
   # +docs:property
-  # revisionHistoryLimit: 1
+  revisionHistoryLimit: 1
 
   # The optional priority class to be used for the cert-manager pods.
   priorityClassName: ""
