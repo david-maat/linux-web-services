@@ -115,6 +115,10 @@ ingress:
           pathType: Prefix
           service: backend
           port: 8000
+        - path: /container_id
+          pathType: Prefix
+          service: backend
+          port: 8000
         - path: /admin
           pathType: Prefix
           service: pgadmin
