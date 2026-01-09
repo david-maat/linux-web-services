@@ -87,7 +87,7 @@ postgres:
 # Shared ingress routing
 ingress:
   enabled: true
-  className: "public"
+  className: "nginx"
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-production"
   hosts:
