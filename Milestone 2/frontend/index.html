@@ -22,7 +22,7 @@
         });
 
       // fetch container id from backend
-      fetch("https://milestone2.davidmaat.be/container_id", { cache: "no-store" })
+      fetch("https://milestone2.davidmaat.be/container_id")
         .then((res) => res.json())
         .then((data) => {
           const cid = data.container_id || data.containerId || data.container || "(unknown)";
