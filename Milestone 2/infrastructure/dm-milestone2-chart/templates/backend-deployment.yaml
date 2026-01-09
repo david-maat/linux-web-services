@@ -27,10 +27,11 @@ spec:
           image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
           imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
           env:
-            {{- range $key, $value := .Values.backend.env }}
-            - name: {{ $key }}
-              value: {{ tpl $value $ | quote }}
-            {{- end }}
+            - name: DB_CONNECTION
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "dm-milestone2-chart.fullname" . }}-postgres
+                  key: DATABASE_URL
           ports:
             - name: http
               containerPort: {{ .Values.backend.service.port }}

@@ -54,8 +54,6 @@ backend:
   service:
     type: ClusterIP
     port: 8000
-  env:
-    DB_CONNECTION: postgresql://postgres:postgres@{{ .Release.Name }}-postgres:5432/postgres
   resources: {}
   livenessProbe:
     httpGet:
@@ -75,10 +73,9 @@ postgres:
   service:
     type: ClusterIP
     port: 5432
-  env:
-    POSTGRES_DB: postgres
-    POSTGRES_USER: postgres
-    POSTGRES_PASSWORD: postgres
+  db: postgres
+  user: postgres
+  password: postgres
   resources: {}
   persistence:
     enabled: false
