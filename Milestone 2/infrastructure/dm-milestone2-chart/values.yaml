@@ -98,7 +98,7 @@ postgres:
   password: postgres
   resources: {}
   persistence:
-    enabled: false
+    enabled: true
     size: 1Gi
 
 # Shared ingress routing
