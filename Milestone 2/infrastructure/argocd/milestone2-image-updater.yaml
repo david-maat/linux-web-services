@@ -1,0 +1,36 @@
+apiVersion: argocd-image-updater.argoproj.io/v1alpha1
+kind: ImageUpdater
+metadata:
+  name: milestone2-image-updater
+  namespace: argocd
+spec:
+  # Namespace where the Argo CD Application resources live
+  namespace: argocd
+  writeBackConfig:
+    # Imperative updates: patches the Application resource via Kubernetes API
+    method: argocd
+  applicationRefs:
+    - namePattern: milestone2
+      images:
+        - alias: frontend
+          imageName: ghcr.io/david-maat/linux-web-services-frontend
+          commonUpdateSettings:
+            updateStrategy: newest-build
+            allowTags: "regexp:^(?:[0-9a-f]{7,40})$"
+            ignoreTags:
+              - latest
+          manifestTargets:
+            helm:
+              name: frontend.image.repository
+              tag: frontend.image.tag
+        - alias: backend
+          imageName: ghcr.io/david-maat/linux-web-services-backend
+          commonUpdateSettings:
+            updateStrategy: newest-build
+            allowTags: "regexp:^(?:[0-9a-f]{7,40})$"
+            ignoreTags:
+              - latest
+          manifestTargets:
+            helm:
+              name: backend.image.repository
+              tag: backend.image.tag
