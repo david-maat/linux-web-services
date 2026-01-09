@@ -12,7 +12,7 @@
 
     <script>
       // fetch user from API
-      fetch("http://milestone2.davidmaat.be/user")
+      fetch("https://milestone2.davidmaat.be/user")
         .then((res) => res.json())
         .then((data) => {
           // get user name
@@ -22,7 +22,7 @@
         });
 
       // fetch container id from backend
-      fetch("http://milestone2.davidmaat.be/container_id")
+      fetch("https://milestone2.davidmaat.be/container_id")
         .then((res) => res.json())
         .then((data) => {
           const cid = data.container_id || data.containerId || data.container || "(unknown)";
