@@ -5,6 +5,7 @@ singleApp:
   # Enable to deploy the original single deployment template (disabled for multi-component).
   enabled: false
 
+# Global replica count (kept for legacy/singleApp templates)
 replicaCount: 1
 
 # Global image pull secrets
@@ -28,6 +29,7 @@ securityContext: {}
 
 # Frontend configuration
 frontend:
+  replicaCount: 2
   image:
     repository: ghcr.io/david-maat/linux-web-services-frontend
     tag: latest
@@ -47,6 +49,7 @@ frontend:
 
 # Backend configuration
 backend:
+  replicaCount: 2
   image:
     repository: ghcr.io/david-maat/linux-web-services-backend
     tag: latest
