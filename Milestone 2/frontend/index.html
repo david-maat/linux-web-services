@@ -8,6 +8,7 @@
   </head>
   <body>
     <h1><span id="user">Loading...</span> has reached milestone 2!</h1>
+    <p id="container">Loading container id...</p>
 
     <script>
       // fetch user from API
@@ -18,6 +19,17 @@
           const user = data.name;
           // display user name
           document.getElementById("user").innerText = user;
+        });
+
+      // fetch container id from backend
+      fetch("http://milestone2.davidmaat.be/container_id")
+        .then((res) => res.json())
+        .then((data) => {
+          const cid = data.container_id || data.containerId || data.container || "(unknown)";
+          document.getElementById("container").innerText = `Container: ${cid}`;
+        })
+        .catch(() => {
+          document.getElementById("container").innerText = "Container: (unreachable)";
         });
     </script>
   </body>
