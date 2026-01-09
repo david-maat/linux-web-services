@@ -20,7 +20,7 @@ def insert_info(name: str):
 def seed():
 	create_table()
 
-	name = "David Maat"
+	name = "David Maat2"
 
 	result = insert_info(name)
 
