@@ -25,7 +25,7 @@
       fetch("https://milestone2.davidmaat.be/container_id")
         .then((res) => res.json())
         .then((data) => {
-          const cid = data.container_id || data.containerId || data.container || "(unknown)";
+          const cid = data.container_id;
           document.getElementById("container").innerText = `Container: ${cid}`;
         })
         .catch(() => {
