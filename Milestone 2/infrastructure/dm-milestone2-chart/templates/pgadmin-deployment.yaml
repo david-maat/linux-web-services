@@ -28,6 +28,10 @@ spec:
           env:
             - name: SCRIPT_NAME
               value: "/admin"
+            - name: PGADMIN_REPLACE_SERVERS_ON_STARTUP
+              value: "True"
+            - name: PGPASS_FILE
+              value: "/pgpass"
             - name: PGADMIN_DEFAULT_EMAIL
               valueFrom:
                 secretKeyRef:
@@ -42,7 +46,23 @@ spec:
             - name: http
               containerPort: 80
               protocol: TCP
+          volumeMounts:
+            - name: servers-json
+              mountPath: /pgadmin4/servers.json
+              subPath: servers.json
+              readOnly: true
+            - name: pgpass
+              mountPath: /pgpass
+              subPath: pgpass
+              readOnly: true
           {{- with .Values.pgadmin.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+      volumes:
+        - name: servers-json
+          configMap:
+            name: {{ include "dm-milestone2-chart.fullname" . }}-pgadmin-servers
+        - name: pgpass
+          secret:
+            secretName: {{ include "dm-milestone2-chart.fullname" . }}-pgadmin-pgpass

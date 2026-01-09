@@ -75,6 +75,10 @@ pgadmin:
     port: 80
   adminEmail: admin@example.com
   adminPassword: admin
+  server:
+    name: Postgres
+    group: Servers
+    sslmode: prefer
   resources: {}
 
 # Postgres configuration (ephemeral unless persistence enabled)
