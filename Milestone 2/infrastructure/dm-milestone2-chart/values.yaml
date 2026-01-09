@@ -107,6 +107,9 @@ ingress:
   className: "nginx"
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-production"
+    # Force upstream connections to close so each browser refresh gets a new upstream
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header Connection close;
   hosts:
     - host: milestone2.davidmaat.be
       paths:
