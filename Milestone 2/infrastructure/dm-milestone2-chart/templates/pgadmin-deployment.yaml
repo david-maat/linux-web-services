@@ -6,6 +6,7 @@ metadata:
     {{- include "dm-milestone2-chart.labels" . | nindent 4 }}
     app.kubernetes.io/component: pgadmin
 spec:
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit | default 10 }}
   replicas: 1
   selector:
     matchLabels:
