@@ -107,6 +107,7 @@ ingress:
   className: "nginx"
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-production"
+    nginx.ingress.kubernetes.io/keepalive: "0"
     nginx.ingress.kubernetes.io/upstream-keepalive-connections: "0"
     nginx.ingress.kubernetes.io/load-balance: "round_robin"
   hosts:
