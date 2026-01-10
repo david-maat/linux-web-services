@@ -18,6 +18,25 @@ spec:
         {{- include "dm-milestone2-chart.labels" . | nindent 8 }}
         app.kubernetes.io/component: postgres
     spec:
+      # Fix PVC permissions before Postgres starts
+      initContainers:
+        - name: init-permissions
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              mkdir -p /var/lib/postgresql/data /var/run/postgresql
+              chown -R 999:999 /var/lib/postgresql/data /var/run/postgresql
+              chmod -R 775 /var/lib/postgresql/data /var/run/postgresql
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+            - name: run
+              mountPath: /var/run/postgresql
       securityContext:
         fsGroup: 999
         seccompProfile:
@@ -58,6 +77,8 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /var/lib/postgresql/data
+            - name: run
+              mountPath: /var/run/postgresql
           {{- with .Values.postgres.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
@@ -70,3 +91,5 @@ spec:
           {{- else }}
           emptyDir: {}
           {{- end }}
+        - name: run
+          emptyDir: {}
