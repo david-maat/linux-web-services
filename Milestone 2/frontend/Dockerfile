@@ -1,6 +1,14 @@
 FROM httpd:2.4-alpine
 
-# Copy static frontend assets into the Apache document root.
-COPY . /usr/local/apache2/htdocs/
+# Copy custom Apache config
+COPY httpd.conf /usr/local/apache2/conf/httpd.conf
 
-EXPOSE 80
+# Copy static frontend assets
+COPY index.html /usr/local/apache2/htdocs/
+
+# Ensure proper permissions
+RUN chown -R daemon:daemon /usr/local/apache2/htdocs /usr/local/apache2/logs
+
+USER daemon
+
+EXPOSE 8080
